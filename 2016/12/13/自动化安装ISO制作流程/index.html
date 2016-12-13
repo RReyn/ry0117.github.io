@@ -1,0 +1,1197 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="ISO,CentOS7," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="此文档参考了《Building a custom CentOS 7 kickstart disc》的内容，原文链接说明：此文档仅用于制作CentOS7.2版本的ISO镜像，其他CentOS版本制作ISO步骤可能与此文档中有所差别。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自动化安装ISO制作流程">
+<meta property="og:url" content="http://yoursite.com/2016/12/13/自动化安装ISO制作流程/index.html">
+<meta property="og:site_name" content="回忆是一条没有归途的路">
+<meta property="og:description" content="此文档参考了《Building a custom CentOS 7 kickstart disc》的内容，原文链接说明：此文档仅用于制作CentOS7.2版本的ISO镜像，其他CentOS版本制作ISO步骤可能与此文档中有所差别。">
+<meta property="og:updated_time" content="2016-12-13T16:49:34.189Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="自动化安装ISO制作流程">
+<meta name="twitter:description" content="此文档参考了《Building a custom CentOS 7 kickstart disc》的内容，原文链接说明：此文档仅用于制作CentOS7.2版本的ISO镜像，其他CentOS版本制作ISO步骤可能与此文档中有所差别。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/13/自动化安装ISO制作流程/"/>
+
+
+  <title> 自动化安装ISO制作流程 | 回忆是一条没有归途的路 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">回忆是一条没有归途的路</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                自动化安装ISO制作流程
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-13T23:13:18+08:00" content="2016-12-13">
+              2016-12-13
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/LinuxSystem/" itemprop="url" rel="index">
+                    <span itemprop="name">LinuxSystem</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><em>此文档参考了《Building a custom CentOS 7 kickstart disc》的内容，<a href="http://www.smorgasbork.com/2014/07/16/building-a-custom-centos-7-kickstart-disc-part-1/" target="_blank" rel="external">原文链接</a></em><br><strong><code>说明：此文档仅用于制作CentOS7.2版本的ISO镜像，其他CentOS版本制作ISO步骤可能与此文档中有所差别。</code></strong></p>
+</blockquote>
+<a id="more"></a>
+<h2 id="构建基础环境"><a href="#构建基础环境" class="headerlink" title="构建基础环境"></a>构建基础环境</h2><ol>
+<li><p>正常运行的CentOS7.2操作系统，虚拟机或物理机均可，作为ISO生产系统，此处使用<a href="http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso" target="_blank" rel="external">CentOS7.2的最小化安装系统</a></p>
+</li>
+<li><p><a href="http://ftp.tc.edu.tw/Linux/CentOS/7/isos/x86_64/CentOS-7-x86_64-DVD-1511.iso" target="_blank" rel="external">下载CentOS7.2</a>ISO镜像文件，用于提供制作ISO镜像时的RPM包及一些制作ISO镜像时需要的文件</p>
+</li>
+<li><p>将下载的CentOS7.2的ISO镜像上传到生产系统中，并将其挂载到生产系统中，此文档中将ISO系统挂载到<code>/mnt</code>目录：<code>mount -o loop /root/CentOS-7-x86_64-DVD-1511.iso /mnt</code></p>
+</li>
+<li><p>在<code>/home/test/</code>目录下创建以下目录，目录结构如下所示：</p>
+<pre><code>~/BuildISO
+├── all_rpms     #用于存放所有的RPM包
+├── ISO      #制作ISO所需的主要目录
+│   ├── EFI
+│   ├── images
+│   ├── isolinux
+│   ├── LiveOS
+│   ├── Packages
+│   └── repodata
+└── utils            #用于存放制作ISO需要的脚本
+</code></pre></li>
+<li><p>从<code>/mnt</code>挂载目录下拷贝<code>CentOS_buildTag</code> <code>EFI</code> <code>EULA</code> <code>GPL</code> <code>RPM-GPG-KEY-CentOS-7</code> <code>RPM-GPG-KEY-CentOS-Testing-7</code> <code>TRANS.TBL</code>文件到<code>~/BuildISO/ISO/</code>目录</p>
+</li>
+<li><p>拷贝<code>/mnt/images/</code>目录下的所有内容到<code>~/BuildISO/ISO/images/</code>，拷贝<code>/mnt/isolinux/</code>下的所有内容到<code>~/BuildISO/ISO/isolinux/</code>目录，拷贝<code>/mnt/LiveOS/</code>目录下所有内容到<code>~/BuildISO/ISO/LiveOS</code>目录中。</p>
+</li>
+<li><p>拷贝<code>/mnt/repodata/3eda3fefdbaf4777fcab430c80bc438293c512f22fd706b12c6567d535b2142a-c7-x86_64-comps.xml</code>到<code>~/BuildISO/</code>目录，并重命名为<code>comps.xml</code></p>
+</li>
+<li><p>拷贝<code>/mnt/Packages/</code>目录下的所有RPM包到<code>~/BuildISO/all_rpms</code>目录中</p>
+</li>
+<li><p>拷贝生产系统中<code>/root/anaconda-ks.cfg</code>到<code>~/BuildISO/isolinux/</code>目录，并重命名为<code>ks.cfg</code>，并对其内容进行修改，修改后内容如下代码所示：</p>
+<pre><code>#version=DEVEL
+# System authorization information
+auth --enableshadow --passalgo=sha512
+
+install
+# Use CDROM installation media
+cdrom
+
+# Use graphical install
+graphical
+
+# Run the Setup Agent on first boot
+firstboot --enable
+ignoredisk --only-use=sda
+# Keyboard layouts
+keyboard --vckeymap=us --xlayouts=&apos;us&apos;
+# System language
+lang en_US.UTF-8
+
+# System timezone
+timezone Asia/Shanghai --isUtc --nontp
+
+firewall --service=ssh
+text
+firstboot --disable
+logging --level=info
+reboot
+
+# Network information
+network  --bootproto=dhcp --device=eth0 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=eth1 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=eth2 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=eth3 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=eth4 --onboot=off --ipv6=auto
+network  --device=lo --hostname=localhost.localdomain
+
+# Root password
+rootpw --iscrypted $6$308MAGXkalXkxfpo$WYIl1IlurMy.47E0bmMOSi2yOgXEDTOT3zdVX5CCoOfSSCQg5ik9bE/ysn3p52SVzsKGJYqsgvBefw0bqbOlg/
+user --name=cloudmap --password=$6$yB9wJt.qmRy6aNYf$krIYwnA4gGibrmPanO6Ycfl0g8yeQlS0QUihYeuIcVjRcpJQR4MIZSze1rJdc.cnbApAfKoWRqyAsutFnkMy31 --iscrypted --gecos=&quot;cloudmap&quot;
+
+# System bootloader configuration
+bootloader --append=&quot; crashkernel=auto&quot; --location=mbr --boot-drive=sda
+zerombr
+
+autopart --type=lvm
+# Partition clearing information
+# 如果用此ISO安装多系统，需要将&apos;--all&apos;参数去掉。
+clearpart --drives=sda --all --initlabel
+
+%packages
+@core
+@base
+kexec-tools
+
+%end
+
+%addon com_redhat_kdump --enable --reserve-mb=&apos;auto&apos;
+
+%end
+</code></pre><blockquote>
+<p><strong><code>注意：</code></strong><code>如果目标安装介质不支持&#39;sda&#39;，支持&#39;vda&#39;，则此文件中所有的&#39;sda&#39;需要修改为&#39;vda&#39;，其他不用修改</code></p>
+</blockquote>
+</li>
+</ol>
+<h2 id="确定需要安装的软件包"><a href="#确定需要安装的软件包" class="headerlink" title="确定需要安装的软件包"></a>确定需要安装的软件包</h2><ol>
+<li><p>在<code>~/BuildISO/comps.xml</code>文件中定义了很多软件组，每个软件组中则包含了此软件组中需要安装的软件包。我们可以根据需要来选择<code>~/BuildISO/comps.xml</code>中定义的软件组来构建我们的ISO。<br>在此次构建ISO中，选择安装<code>core</code> <code>base</code> <code>development</code> <code>additional-devel</code> <code>debugging</code>  <code>java-platform</code> <code>network-file-system-client</code> <code>performance</code> <code>perl-runtime</code>，并将以上的组写入到<code>ks.cfg</code>文件的<code>%packages</code>后面，并以<code>@</code>开头，如<code>@core</code> <code>@base</code>等。修改后的<code>ks.cfg</code>文件<code>%packages</code>之后的内容如下所示：</p>
+<pre><code>%packages
+@core
+@base
+@development
+@additional-devel
+@debugging
+@java-platform
+@network-file-system-client
+@performance
+@perl-runtime
+kexec-tools
+
+%end
+</code></pre></li>
+<li><p>选择以上软件包组之后，则需要根据<code>~/BuildISO/comps.xml</code>文件中的内容将所选择的软件包组所需的软件软件包拷贝到<code>~/BuildISO/ISO/Packages</code>目录之中，例如<code>core</code>软件包所需软件包在<code>comps.xml</code>中如下所示：</p>
+<pre><code>&lt;group&gt;
+   &lt;id&gt;core&lt;/id&gt;
+   &lt;name&gt;Core&lt;/name&gt;
+   ...
+   &lt;packagelist&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;Red_Hat_Enterprise_Linux-Release_Notes-7-en-US&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;audit&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;basesystem&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;bash&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;biosdevname&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;btrfs-progs&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;coreutils&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;cronie&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;curl&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;dhclient&lt;/packagereq&gt;
+     &lt;packagereq type=&quot;mandatory&quot;&gt;e2fsprogs&lt;/packagereq&gt;
+     ...
+   &lt;/packagelist&gt;
+&lt;/group&gt;
+</code></pre><p>上面代码中在<code>&lt;group&gt;</code>标签内的<code>&lt;packagereq type=&quot;mandatory&quot;&gt;</code>和<code>&lt;packagereq type=&quot;default&quot;&gt;</code>条目即是<code>core</code>软件组需要的RPM包的名称。</p>
+</li>
+<li><p>为方便拷贝所有组的所有软件包，可以通过运行<code>~/BuildISO/utils/gather_packages.pl</code>脚本来拷贝所有软件包。<code>gather_packages.pl</code>脚本是<code>Perl</code>写的，所以需要在系统上安装一些运行此脚本依赖的软件包。<br>安装运行<code>gather_packages.pl</code>脚本所需的软件包：</p>
+<pre><code>$ cd ~/BuildISO/all_rpms
+$ sudo rpm -Uvh perl-5*-*.el7.x86_64.rpm \
+perl-Business-ISBN-*.el7.noarch.rpm   \
+perl-Carp-*.el7.noarch.rpm   \
+perl-Compress-Raw-Bzip2-*.el7.x86_64.rpm \
+perl-Compress-Raw-Zlib-*.el7.x86_64.rpm   \
+perl-constant-*.el7.noarch.rpm   \
+perl-Data-Dumper-*.el7.x86_64.rpm   \
+perl-devel-*.el7.x86_64.rpm   \
+perl-Digest-*.el7.noarch.rpm   \
+perl-Digest-MD5-*.el7.x86_64.rpm   \
+perl-Digest-SHA-*.el7.x86_64.rpm   \
+perl-Encode-*.el7.x86_64.rpm   \
+perl-Encode-Locale-*.el7.noarch.rpm   \
+perl-Exporter-*.el7.noarch.rpm   \
+perl-ExtUtils-Install-*.el7.noarch.rpm   \
+perl-ExtUtils-MakeMaker-*.el7.noarch.rpm   \
+perl-ExtUtils-Manifest-*.el7.noarch.rpm   \
+perl-ExtUtils-ParseXS-*.el7.noarch.rpm   \
+perl-File-Listing-*.el7.noarch.rpm   \
+perl-File-Path-*.el7.noarch.rpm   \
+perl-File-Temp-*.el7.noarch.rpm   \
+perl-Filter-*.el7.x86_64.rpm   \
+perl-Getopt-Long-*.el7.noarch.rpm   \
+perl-HTML-Parser-*.el7.x86_64.rpm   \
+perl-HTML-Tagset-*.el7.noarch.rpm   \
+perl-HTTP-Cookies-*.el7.noarch.rpm   \
+perl-HTTP-Daemon-*.el7.noarch.rpm   \
+perl-HTTP-Date-*.el7.noarch.rpm   \
+perl-HTTP-Message-*.el7.noarch.rpm   \
+perl-HTTP-Negotiate-*.el7.noarch.rpm   \
+perl-HTTP-Tiny-*.el7.noarch.rpm   \
+perl-IO-Compress-*.el7.noarch.rpm   \
+perl-IO-HTML-*.el7.noarch.rpm   \
+perl-IO-Socket-IP-*.el7.noarch.rpm   \
+perl-IO-Socket-SSL-*.el7.noarch.rpm   \
+perl-libs-*.el7.x86_64.rpm   \
+perl-libwww-perl-*.el7.noarch.rpm   \
+perl-LWP-MediaTypes-*.el7.noarch.rpm   \
+perl-macros-*.el7.x86_64.rpm   \
+perl-Net-HTTP-*.el7.noarch.rpm   \
+perl-Net-LibIDN-*.el7.x86_64.rpm   \
+perl-Net-SSLeay-*.el7.x86_64.rpm   \
+perl-parent-*.el7.noarch.rpm   \
+perl-PathTools-*.el7.x86_64.rpm   \
+perl-Pod-Escapes-*.el7.noarch.rpm   \
+perl-Pod-Perldoc-*.el7.noarch.rpm   \
+perl-Pod-Simple-*.el7.noarch.rpm   \
+perl-Pod-Usage-*.el7.noarch.rpm   \
+perl-podlators-*.el7.noarch.rpm   \
+perl-Scalar-List-Utils-*.el7.x86_64.rpm   \
+perl-Socket-*.el7.x86_64.rpm   \
+perl-srpm-macros-*.el7.noarch.rpm   \
+perl-Storable-*.el7.x86_64.rpm   \
+perl-Test-Harness-*.el7.noarch.rpm   \
+perl-Text-ParseWords-*.el7.noarch.rpm   \
+perl-Thread-Queue-*.el7.noarch.rpm   \
+perl-threads-*.el7.x86_64.rpm   \
+perl-Time-Local-*.el7.noarch.rpm   \
+perl-TimeDate-*.el7.noarch.rpm   \
+perl-URI-*.el7.noarch.rpm   \
+perl-WWW-RobotRules-*.el7.noarch.rpm   \
+perl-XML-Filter-BufferText-*.el7.noarch.rpm   \
+perl-XML-NamespaceSupport-*.el7.noarch.rpm  \
+perl-XML-Parser-*.el7.x86_64.rpm   \
+perl-XML-SAX-*.el7.noarch.rpm   \
+perl-XML-Simple-*.el7.noarch.rpm   \
+gdbm-devel-*.x86_64.rpm   \
+glibc-devel-*.x86_64.rpm   \
+glibc-headers-*.x86_64.rpm   \
+kernel-headers-*.x86_64.rpm   \
+libdb-devel-*.x86_64.rpm   \
+systemtap-sdt-devel-*.x86_64.rpm   \
+mailcap-*.noarch.rpm perl-Time-HiRes-1.9725-3.el7.x86_64.rpm \
+pyparsing-1.5.6-9.el7.noarch.rpm 
+</code></pre></li>
+<li><p>运行<code>gather_packages.pl</code>脚本：</p>
+<pre><code>~/BuildISO/utils/gather_packages.pl ~/BuildISO/comps.xml ~/BuildISO/all_rpms \
+~/BuildISO/ISO/Packages x86_64 development additional-devel debugging \
+java-platform network-file-system-client performance perl-runtime
+</code></pre><p><strong>注:</strong> <code>gather_packages.pl</code>脚本默认手机<code>core</code>和<code>base</code>两个组的软件包，所以此处不需要再次添加<code>core</code>和<code>base</code>两个组。</p>
+</li>
+</ol>
+<h2 id="解决RPM依赖问题"><a href="#解决RPM依赖问题" class="headerlink" title="解决RPM依赖问题"></a>解决RPM依赖问题</h2><ol>
+<li><p>现在已经将所有需要的组的RPM包拷贝到了<code>~/BuildISO/ISO/Packages</code>目录中，接下来就要检查此目录中的RPM包是否还缺少依赖的RPM包。我们可以通过脚本<code>~/BuildISO/utils/resove_deps.pl</code>来完成检查拷贝工作。</p>
+<pre><code>~/BuildISO/utils/resolve_deps.pl ~/BuildISO/all_rpms \
+    ~/BuildISO/ISO/Packages x86_64
+</code></pre></li>
+<li><p>现在我们已经得到了所需要的RPM包，现在需要测试一下RPM包的依赖关系</p>
+<pre><code>cd ~/BuildISO/ISO/Packages
+mkdir /tmp/testdb
+rpm --initdb --dbpath /tmp/testdb
+rpm --test --dbpath /tmp/testdb -Uvh *.rpm
+</code></pre><p>命令执行完成后，输出如下信息：</p>
+<pre><code>warning: abattis-cantarell-fonts-0.0.16-3.el7.noarch.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+error: Failed dependencies:
+        /usr/sbin/cgrulesengd is needed by cgdcbxd-1.0.2-5.el7.x86_64
+        /usr/bin/fipscheck is needed by fipscheck-lib-1.4.1-5.el7.x86_64
+        /usr/bin/db_stat is needed by rpm-4.11.3-17.el7.x86_64
+</code></pre><p>说明还缺少一些依赖，可以通过<code>yum provides cgrulesengd</code>来查找所需的RPM包<br><code>fipscheck</code>由<code>fipscheck-1.4.1-5.el7.x86_64.rpm</code>提供<br><code>db_stat</code>由<code>libdb-utils-5.3.21-19.el7.x86_64.rpm</code>提供<br><code>cgrulesengd</code>由<code>libcgroup-tools-0.41-8.el7.x86_64.rpm</code>提供<br>从<code>~/BuildISO/all_rpms</code>目录拷贝以上三个文件到<code>~/BuildISO/ISO/Packages</code>目录下。如果<code>~/BuildISO/all_rpms</code>目录下不含有这些RPM包，可以到<a href="http://mirrors.163.com/centos/" target="_blank" rel="external">163镜像源</a>网站的<a href="http://mirrors.163.com/centos/7.2.1511/os/x86_64/Packages/" target="_blank" rel="external"><code>/centos/7.2.1511/os/x86_64/Packages/</code></a>和<a href="http://mirrors.163.com/centos/7.2.1511/updates/x86_64/Packages/" target="_blank" rel="external"><code>/centos/7.2.1511/updates/x86_64/Packages/</code></a>两个目录中查找并下载。再次执行<code>rpm --test --dbpath /tmp/testdb -Uvh *.rpm</code>，发现依赖已经解决。</p>
+</li>
+</ol>
+<blockquote>
+<p><strong><code>注意：</code></strong><code>注意检查软件包中是否包含kernel-*相关的rpm包，如果没有这些RPM包，系统安装完成后无法进入系统</code></p>
+</blockquote>
+<h2 id="生成RPM-repository"><a href="#生成RPM-repository" class="headerlink" title="生成RPM repository"></a>生成RPM repository</h2><ol>
+<li><p>为了生成repository，需要<code>createrepo</code>工具，由于生产系统为最小化安装系统，所以需要安装<code>createrepo</code></p>
+<pre><code>$ cd ~/BuildISO/all_rpms
+$ sudo rpm -Uvh \
+      createrepo-*.el7.noarch.rpm \
+      deltarpm-*.el7.x86_64.rpm \
+      python-deltarpm-*.el7.x86_64.rpm \
+      libxml2-python-*.el7.x86_64.rpm
+</code></pre></li>
+<li><p>创建repository</p>
+<pre><code>$ cd ~/BuildISO/ISO/
+$ createrepo -g ~/BuildISO/comps.xml .
+</code></pre></li>
+</ol>
+<blockquote>
+<p><strong><code>注意：</code></strong><code>在CentOS下需要根据&#39;.discinfo&#39;来设置&#39;baseurl&#39;(declare -x discinfo=head -1 .discinfo; createrepo -u &quot;media://$discinfo&quot;...); 在CentOS7中不再需要如此做，实际上如果在CentOS7中执行了这个命令，在安装的过程中，可能会报错&quot;RepoError after 10 retries: Insufficient space in download directory /run/install/repo/Packages&quot;</code></p>
+</blockquote>
+<h2 id="生成ISO镜像"><a href="#生成ISO镜像" class="headerlink" title="生成ISO镜像"></a>生成ISO镜像</h2><ol>
+<li><p>制作ISO需要<code>mkisofs</code>工具，需要安装<code>genisoimage</code>包:</p>
+<pre><code>$ cd ~/BuildISO/all_rpms
+$ sudo rpm -Uvh \
+  genisoimage-*.el7.x86_64.rpm \
+  libusal-*.el7.x86_64.rpm
+</code></pre></li>
+<li><p>修改<code>~/BuildISO/ISO/isolinux/isolinux.cfg</code>如下:</p>
+<pre><code>label linux
+  menu label ^Install CentOS 7
+  kernel vmlinuz
+  # 去掉quiet，增加inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg内容
+#  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 quiet
+ append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg
+</code></pre></li>
+<li><p>制作ISO镜像</p>
+<pre><code>mkisofs -U -r -v -T -J -joliet-long -V &quot;CentOS 7 x86_64&quot; -volset &quot;CentOS 7 x86_64&quot; -A &quot;CentOS 7 x86_64&quot; -input-charset utf-8 -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /root/ISO.iso ~/BuildISO/ISO/
+</code></pre></li>
+</ol>
+<h2 id="测试ISO镜像"><a href="#测试ISO镜像" class="headerlink" title="测试ISO镜像"></a>测试ISO镜像</h2><p>将制作好的ISO镜像用VMware安装或者在Ovirt中安装测试，确认制作的ISO能够正常运行。</p>
+<h2 id="定制自己的功能并制作ISO"><a href="#定制自己的功能并制作ISO" class="headerlink" title="定制自己的功能并制作ISO"></a>定制自己的功能并制作ISO</h2><p>在上面已经创建出了能够正常运行的ISO镜像，下面就是在上述ISO中添加自己的功能。</p>
+<p>为添加自己定制的功能，我们需要使用<code>postinstall script</code>，即在<code>ks.cfg</code>中增加<code>%post</code>区域。</p>
+<p>在<code>ks.cfg</code>配置文件中，<code>%post</code>域的命令在<code>anaconda</code>安装完成后开始执行。默认情况下，<code>%post</code>区域的命令运行在一个<code>chroot</code>环境下，此时<code>/mnt/sysimage</code>作为<code>/</code>目录，这样允许用户像访问正常目录一样进行访问，例如：如果要使用<code>/etc</code>目录，则应该使用<code>/etc</code>而不是<code>/mnt/sysimage/etc</code>。在<code>chroot</code>环境下最主要的缺点是无法访问安装介质。</p>
+<p>为了解决这个问题，这里将<code>postinstall script</code>分两个阶段来处理：</p>
+<ul>
+<li><p>在第一阶段：告诉<code>anaconda</code>不要去<code>chroot</code>，将需要的文件从安装介质（ISO）中拷贝到磁盘中：</p>
+<pre><code>%post --nochroot
+
+#!/bin/bash
+
+set -x -v
+exec 1&gt; /mnt/sysimage/root/kickstart-stage1.log 2&gt;&amp;1
+
+echo &quot;==&gt; copying files from media to install drive...&quot;
+
+cp -r /run/install/repo/postinstall /mnt/sysimage/root
+
+%end
+</code></pre><p>此次ISO镜像中定制安装文件放到了<code>~/BuildISO/ISO/</code>目录下的<code>postinstall</code>目录中。制作ISO镜像时的<code>~/BuildISO/ISO/</code>对应于安装介质的根目录，同时安装介质挂载在<code>/run/install/repo</code>目录下。所以<code>~/BuildISO/ISO/postinstall</code>可以通过<code>/run/install/repo/postinstall</code>获取。我们从安装介质上拷贝<code>postinstall</code>目录到新系统硬盘的<code>/root/postinstall</code>目录</p>
+</li>
+<li><p>第二阶段：安装定制的功能</p>
+<pre><code>%post
+#!/bin/bash
+
+set -x -v
+
+exec 1&gt;/root/kickstart-stage2.log 2&gt;&amp;1
+
+ls -l /root/postinstall
+
+echo &quot;===&gt; install test...&quot;
+%end
+</code></pre></li>
+</ul>
+<p><strong>具体操作流程：</strong></p>
+<ol>
+<li><p>在<code>~/BuildISO/ISO</code>中创建<code>postinstall</code>目录，并在其下创建相关目录：</p>
+<pre><code>mkdir -p ~/BuildISO/ISO/postinstall/app/test
+</code></pre></li>
+<li>将test相关RPM包上传到test目录中</li>
+<li><p>修改<code>ks.cfg</code>，通过两个<code>%post</code>来实现RPM包拷贝和RPM包的安装，具体如下：</p>
+<pre><code>%post --nochroot
+
+#!/bin/bash
+
+set -x -v
+exec 1&gt; /mnt/sysimage/root/kickstart-stage1.log 2&gt;&amp;1
+
+echo &quot;==&gt; copying files from media to install drive...&quot;
+
+cp -r /run/install/repo/postinstall /mnt/sysimage/root
+
+%end
+
+%post
+#!/bin/bash
+
+set -x -v
+
+exec 1&gt;/root/kickstart-stage2.log 2&gt;&amp;1
+
+ls -l /root/postinstall
+
+echo &quot;===&gt; install test...&quot;
+yum install /root/postinstall/test/test.rpm    
+
+%end
+</code></pre></li>
+<li><p>制作ISO镜像</p>
+<pre><code>mkisofs -U -r -v -T -J -joliet-long -V &quot;CentOS 7 x86_64&quot; -volset &quot;CentOS 7 x86_64&quot; -A &quot;CentOS 7 x86_64&quot; -input-charset utf-8 -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /root/ISO-CM.iso ~/BuildISO/ISO/
+</code></pre></li>
+</ol>
+<blockquote>
+<p><strong><code>注意：</code></strong><code>在定制自己的功能模块时，最好是在先前已经安装好的ISO上测试一下能否安装成功，安装成功不缺少依赖的情况下再按以上步骤实施。</code></p>
+</blockquote>
+<h2 id="测试ISO镜像-1"><a href="#测试ISO镜像-1" class="headerlink" title="测试ISO镜像"></a>测试ISO镜像</h2><p>安装测试ISO，并测试定制安装的功能是否能正常工作。</p>
+<h2 id="附注"><a href="#附注" class="headerlink" title="附注"></a>附注</h2><h3 id="gather-packets-pl"><a href="#gather-packets-pl" class="headerlink" title="gather_packets.pl"></a>gather_packets.pl</h3><pre><code>#!/usr/bin/perl
+
+use XML::Simple;
+
+my ($comps_file, $rpm_src_path, $rpm_dst_path, $arch, @extra_groups_and_packages) = @ARGV;
+
+if (!-e $comps_file)
+{
+    print_usage (&quot;Can&apos;t find &apos;$comps_file&apos;&quot;);
+}
+if (!-e $rpm_src_path)
+{
+    print_usage (&quot;RPM source path &apos;$rpm_src_path&apos; does not exist&quot;);
+}
+if (!-e $rpm_dst_path)
+{
+    print_usage (&quot;RPM destination path &apos;$rpm_dst_path&apos; does not exist&quot;);
+}
+if (!$arch)
+{
+    print_usage (&quot;Architecture not specified&quot;);
+}
+
+#### we always gather core and base; note that for CentOS 7, we also need
+#### to include the grub2 package, or installation will fail
+@desired_groups = (&apos;core&apos;, &apos;base&apos;, &apos;grub2&apos;);
+foreach (@extra_groups_and_packages)
+{
+    push (@desired_groups, $_);
+}
+
+$regex = &apos;^(&apos; . join (&apos;|&apos;, @desired_groups) . &apos;)$&apos;;
+
+print &quot;reading $comps_file...\n&quot;;
+print &quot;getting RPMs from $rpm_src_path...\n&quot;;
+
+$xml = new XML::Simple;
+$comps = $xml-&gt;XMLin($comps_file);
+
+$cmd = &quot;rm $rpm_dst_path/*&quot;;
+print &quot;$cmd\n&quot;;
+`$cmd`;
+
+%copied_groups = {};
+%copied_packages = {};
+
+foreach $group (@{$comps-&gt;{group}})
+{
+    $id = $group-&gt;{id};
+    if ($id !~ m#$regex#)
+    {
+        next;
+    }
+
+    print &quot;#### group \@$id\n&quot;;
+    $packagelist = $group-&gt;{packagelist};
+    foreach $pr (@{$packagelist-&gt;{packagereq}})
+    {
+        if ($pr-&gt;{type} eq &apos;optional&apos; || $pr-&gt;{type} eq &apos;conditional&apos;)
+        {
+            next;
+        }
+
+        $cmd = &quot;cp $rpm_src_path/&quot; . $pr-&gt;{content} . &quot;-[0-9]*.$arch.rpm&quot;
+                . &quot; $rpm_src_path/&quot; . $pr-&gt;{content} . &quot;-[0-9]*.noarch.rpm $rpm_dst_path&quot;;
+        print &quot;$cmd\n&quot;;
+        `$cmd 2&gt;&amp;1`;
+
+        $copied_packages{$pr-&gt;{content}} = 1;
+    }
+
+    $copied_groups{$group} = 1;
+}
+
+#### assume that any strings that weren&apos;t matched in the comps file&apos;s group list
+#### are actually packages
+
+foreach $group (@desired_groups)
+{
+    if ($copied_groups{$group})
+    {
+        next;
+    }
+
+    $cmd = &quot;cp $rpm_src_path/&quot; . $group . &quot;-[0-9]*.$arch.rpm&quot;
+            . &quot; $rpm_src_path/&quot; . $group . &quot;-[0-9]*.noarch.rpm $rpm_dst_path&quot;;
+    print &quot;$cmd\n&quot;;
+    `$cmd 2&gt;&amp;1`;
+}
+
+sub print_usage
+{
+    my ($msg) = @_;
+
+    ($msg) &amp;&amp; print &quot;$msg\n\n&quot;;
+
+    print &lt;&lt;__TEXT__;
+
+parse_comps.pl comps_file rpm_src_path arch [xtra_grps_and_pkgs]
+
+    comps_file           the full path to the comps.xml file (as provided 
+                         in the original distro
+
+    rpm_src_path         the full path to the directory of all RPMs from 
+                         the distro
+
+    rpm_dst_path         the full path to the directory where you want
+                         to save the RPMs for your kickstart
+
+    arch                 the target system architecture (e.g. x86_64)
+
+    xtra_grps_and_pkgs   a list of extra groups and packages, separated by spaces
+
+
+__TEXT__
+
+    exit;
+}
+</code></pre><h3 id="resolve-deps-pl"><a href="#resolve-deps-pl" class="headerlink" title="resolve_deps.pl"></a>resolve_deps.pl</h3><pre><code>#!/usr/bin/perl
+
+my ($rpm_src_path, $rpm_dst_path, $arch) = @ARGV;
+
+if (!-e $rpm_src_path)
+{
+    print_usage (&quot;RPM source path &apos;$rpm_src_path&apos; does not exist&quot;);
+}
+if (!-e $rpm_dst_path)
+{
+    print_usage (&quot;RPM destination path &apos;$rpm_dst_path&apos; does not exist&quot;);
+}
+if (!$arch)
+{
+    print_usage (&quot;Architecture not specified&quot;);
+}
+
+print &quot;Scanning all RPMs for capabilities provided...\n&quot;;
+%providers = {};
+open(my $fh_providers, &apos;&gt;/tmp/providers.txt&apos;);
+foreach (&lt;$rpm_src_path/*.rpm&gt;)
+{
+    if (!m#(noarch|$arch)\.rpm$#)
+    {
+        next;
+    }
+
+    $rpm = $_;
+
+    print &quot;.&quot;;
+    print $fh_providers &quot;$rpm\n&quot;;
+
+    $cmd = &quot;rpm -q --provides -p $rpm 2&gt;/dev/null&quot;;
+    $output = `$cmd`;
+
+    @lines = split (&quot;\n&quot;, $output);
+
+    foreach (@lines)
+    {
+        if (m#(.+)\s+=\s+\d#)
+        {
+            $capability = $1;
+        }
+        else
+        {
+            $capability = $_;
+        }
+
+        $rpm =~ m#([^/]+$)#;
+        $rpm = $1;
+
+        if ($providers{$capability} &amp;&amp; ($providers{$capability} != $rpm))
+        {
+            print &quot;WARNING: $capability is provided by &quot; . $providers{$capability} . &quot; and $rpm\n&quot;;
+        }
+
+        print $fh_providers &quot;  $capability\n&quot;;
+        $providers{$capability} = $rpm;
+    }
+}
+close $fh_providers;
+
+print &quot;\n&quot;;
+
+@queue = ();
+%copied_packages = {};
+foreach (&lt;$rpm_dst_path/*rpm&gt;)
+{
+    push (@queue, $_);
+    my ($filename) = (m#/([^/]+)$#);
+    my ($package_name) = ($filename =~ m#/(.+?)-\d#);
+    $copied_packages{$package_name} = 1;
+}
+
+while (@queue)
+{
+    $rpm_name = pop (@queue);
+
+    print &quot;checking $rpm_name...\n&quot;;
+    $cmd = &quot;rpm -qRp $rpm_name 2&gt;/dev/null | sort | uniq&quot;;
+    #print &quot;$cmd\n&quot;;
+    @output = `$cmd`;
+
+    foreach (@output)
+    {
+        s/^\s+//;
+        s/\s+$//;
+        s/\s+[&lt;&gt;=].+$//;  # strip off stuff like &quot; &gt;= 2003a&quot;
+
+        if ($providers{$_})
+        {
+            $new_path = &quot;$rpm_dst_path/&quot; . $providers{$_};
+
+            if (-e $new_path)
+            {
+                #### already have this RPM in the directory...
+                next;
+            }
+            print &quot; requires $_ ==&gt; &quot; . $providers{$_} . &quot;\n&quot;;
+
+            push (@queue, $new_path);
+
+            $newrpm = &quot;$rpm_src_path/&quot; . $providers{$_};
+            $cmd = &quot;cp $newrpm $rpm_dst_path&quot;;
+            print &quot;  $cmd\n&quot;;
+            `$cmd 2&gt;&amp;1`;
+        }
+    }
+}
+
+sub print_usage
+{
+    my ($msg) = @_;
+
+    ($msg) &amp;&amp; print &quot;$msg\n\n&quot;;
+
+    print &lt;&lt;__TEXT__;
+follow_deps.pl rpm_src_path rpm_dst_path arch
+
+    rpm_src_path    the full path to the directory of all RPMs from the distro
+
+    rpm_dst_path    the full path to the directory where you want to copy
+                    the RPMs for your kickstart
+
+    arch            the target system architecture (e.g. x86_64)
+
+
+__TEXT__
+
+    exit;
+}
+</code></pre>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ISO/" rel="tag">#ISO</a>
+          
+            <a href="/tags/CentOS7/" rel="tag">#CentOS7</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/12/13/hello-world/" rel="prev" title="Hello World">
+                Hello World <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="RY" />
+          <p class="site-author-name" itemprop="name">RY</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#构建基础环境"><span class="nav-number">1.</span> <span class="nav-text">构建基础环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#确定需要安装的软件包"><span class="nav-number">2.</span> <span class="nav-text">确定需要安装的软件包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决RPM依赖问题"><span class="nav-number">3.</span> <span class="nav-text">解决RPM依赖问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成RPM-repository"><span class="nav-number">4.</span> <span class="nav-text">生成RPM repository</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成ISO镜像"><span class="nav-number">5.</span> <span class="nav-text">生成ISO镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试ISO镜像"><span class="nav-number">6.</span> <span class="nav-text">测试ISO镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定制自己的功能并制作ISO"><span class="nav-number">7.</span> <span class="nav-text">定制自己的功能并制作ISO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试ISO镜像-1"><span class="nav-number">8.</span> <span class="nav-text">测试ISO镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附注"><span class="nav-number">9.</span> <span class="nav-text">附注</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gather-packets-pl"><span class="nav-number">9.1.</span> <span class="nav-text">gather_packets.pl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#resolve-deps-pl"><span class="nav-number">9.2.</span> <span class="nav-text">resolve_deps.pl</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">RY</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
