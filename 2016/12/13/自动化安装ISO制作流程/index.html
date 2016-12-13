@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/12/13/自动化安装ISO制作流程/index.html">
 <meta property="og:site_name" content="回忆是一条没有归途的路">
 <meta property="og:description" content="此文档参考了《Building a custom CentOS 7 kickstart disc》的内容，原文链接说明：此文档仅用于制作CentOS7.2版本的ISO镜像，其他CentOS版本制作ISO步骤可能与此文档中有所差别。">
-<meta property="og:updated_time" content="2016-12-13T16:49:34.189Z">
+<meta property="og:updated_time" content="2016-12-13T17:10:32.904Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="自动化安装ISO制作流程">
 <meta name="twitter:description" content="此文档参考了《Building a custom CentOS 7 kickstart disc》的内容，原文链接说明：此文档仅用于制作CentOS7.2版本的ISO镜像，其他CentOS版本制作ISO步骤可能与此文档中有所差别。">
@@ -568,10 +568,21 @@ $ sudo rpm -Uvh \
   kernel vmlinuz
   # 去掉quiet，增加inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg内容
 #  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 quiet
- append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg
+ append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 \
+           inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg
 </code></pre></li>
 <li><p>制作ISO镜像</p>
-<pre><code>mkisofs -U -r -v -T -J -joliet-long -V &quot;CentOS 7 x86_64&quot; -volset &quot;CentOS 7 x86_64&quot; -A &quot;CentOS 7 x86_64&quot; -input-charset utf-8 -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /root/ISO.iso ~/BuildISO/ISO/
+<pre><code>mkisofs -U -r -v -T -J -joliet-long \
+    -V &quot;CentOS 7 x86_64&quot; \
+    -volset &quot;CentOS 7 x86_64&quot; \
+    -A &quot;CentOS 7 x86_64&quot; \
+    -input-charset utf-8 \
+    -b isolinux/isolinux.bin \
+    -c isolinux/boot.cat -no-emul-boot \
+    -boot-load-size 4 -boot-info-table \
+    -eltorito-alt-boot -e images/efiboot.img \
+    -no-emul-boot -o /root/ISO.iso \
+    ~/BuildISO/ISO/
 </code></pre></li>
 </ol>
 <h2 id="测试ISO镜像"><a href="#测试ISO镜像" class="headerlink" title="测试ISO镜像"></a>测试ISO镜像</h2><p>将制作好的ISO镜像用VMware安装或者在Ovirt中安装测试，确认制作的ISO能够正常运行。</p>
@@ -644,7 +655,17 @@ yum install /root/postinstall/test/test.rpm
 %end
 </code></pre></li>
 <li><p>制作ISO镜像</p>
-<pre><code>mkisofs -U -r -v -T -J -joliet-long -V &quot;CentOS 7 x86_64&quot; -volset &quot;CentOS 7 x86_64&quot; -A &quot;CentOS 7 x86_64&quot; -input-charset utf-8 -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /root/ISO-CM.iso ~/BuildISO/ISO/
+<pre><code>mkisofs -U -r -v -T -J -joliet-long \
+    -V &quot;CentOS 7 x86_64&quot; \
+    -volset &quot;CentOS 7 x86_64&quot; \
+    -A &quot;CentOS 7 x86_64&quot; \
+    -input-charset utf-8 \
+    -b isolinux/isolinux.bin \
+    -c isolinux/boot.cat -no-emul-boot \
+    -boot-load-size 4 -boot-info-table \
+    -eltorito-alt-boot -e images/efiboot.img \
+    -no-emul-boot -o /root/ISO-CM.iso \
+    ~/BuildISO/ISO/
 </code></pre></li>
 </ol>
 <blockquote>
