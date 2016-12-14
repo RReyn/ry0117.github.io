@@ -1,0 +1,715 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="CentOS7,ISO," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="由Kickstart制作的ISO镜像直接由UltraISO工具写入U盘制作启动盘，安装系统的时候会报错mount: no medium found on /dev/sr0。通过搜索得知由Kickstart工具制作的ISO不能直接写入U盘进行安装，需要执行一系列操作，下面是对操作的总结。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="制作U盘启动盘">
+<meta property="og:url" content="http://yoursite.com/2016/12/14/制作U盘启动盘/index.html">
+<meta property="og:site_name" content="回忆是一条没有归途的路">
+<meta property="og:description" content="由Kickstart制作的ISO镜像直接由UltraISO工具写入U盘制作启动盘，安装系统的时候会报错mount: no medium found on /dev/sr0。通过搜索得知由Kickstart工具制作的ISO不能直接写入U盘进行安装，需要执行一系列操作，下面是对操作的总结。">
+<meta property="og:updated_time" content="2016-12-14T15:08:40.875Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="制作U盘启动盘">
+<meta name="twitter:description" content="由Kickstart制作的ISO镜像直接由UltraISO工具写入U盘制作启动盘，安装系统的时候会报错mount: no medium found on /dev/sr0。通过搜索得知由Kickstart工具制作的ISO不能直接写入U盘进行安装，需要执行一系列操作，下面是对操作的总结。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '6363975639506093000',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/14/制作U盘启动盘/"/>
+
+
+  <title> 制作U盘启动盘 | 回忆是一条没有归途的路 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">回忆是一条没有归途的路</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                制作U盘启动盘
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-14T22:50:45+08:00" content="2016-12-14">
+              2016-12-14
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/LinuxSystem/" itemprop="url" rel="index">
+                    <span itemprop="name">LinuxSystem</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/14/制作U盘启动盘/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/14/制作U盘启动盘/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>由<code>Kickstart</code>制作的ISO镜像直接由<code>UltraISO</code>工具写入U盘制作启动盘，安装系统的时候会报错<code>mount: no medium found on /dev/sr0</code>。通过搜索得知由<code>Kickstart</code>工具制作的ISO不能直接写入U盘进行安装，需要执行一系列操作，下面是对操作的总结。</p>
+<a id="more"></a>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><ol>
+<li>一个由<code>Kickstart</code>工具制作的ISO镜像文件</li>
+<li>一个U盘，格式为<code>FAT32</code>，至少8G大小</li>
+<li>一个正常运行的Linux操作系统</li>
+</ol>
+<h2 id="制作U盘安装盘"><a href="#制作U盘安装盘" class="headerlink" title="制作U盘安装盘"></a>制作U盘安装盘</h2><p>我所使用的U盘在系统中显示为<code>/dev/sdb</code>，下面将以<code>/dev/sdb</code>为示例来说明整个过程：</p>
+<h3 id="首先格式化U盘"><a href="#首先格式化U盘" class="headerlink" title="首先格式化U盘"></a>首先格式化U盘</h3><p><code>mkfs</code>命令可以用来格式化磁盘，针对不同磁盘类型需要指定相对应的类型参数，如<code>mkfs -t vfat /dev/sdb</code>。同时<code>mkfs</code>针对不同类型的磁盘格式有对应的格式化命令，如：<code>mkfs.vfat</code> <code>mkfs.ext2</code> <code>mkfs.ext3</code> <code>mkfs.xfs</code>等</p>
+<p>下面使用<code>mkfs.vfat</code>格式化U盘：</p>
+<pre><code>mkfs.vfat /dev/sdb
+</code></pre><p>执行以上命令可能会报错：<strong>mkfs.vfat:Device partition expected, not making filesystem on entire device ‘/dev/sdb’ (use -I to override)</strong><br>如果出现此错误，则执行如下命令：</p>
+<pre><code>mkfs.vfat -I /dev/sdb
+</code></pre><h3 id="为U盘创建分区"><a href="#为U盘创建分区" class="headerlink" title="为U盘创建分区"></a>为U盘创建分区</h3><p>为U盘创建两个分区：</p>
+<ul>
+<li>一个类型为<code>W95 FAT32(LBA)</code>(可以通过<code>fdisk</code>命令的<code>c</code>参数指定)，大小为500M，此分区作为启动分区</li>
+<li>将剩余空间创建为一个<code>ext3</code>类型的分区</li>
+</ul>
+<p>下面使用<code>fdisk</code>命令对磁盘进行分区：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">$ sudo fdisk /dev/sdb</div><div class="line">Welcome to fdisk (util-linux 2.23.2).</div><div class="line"></div><div class="line">Changes will remain <span class="keyword">in</span> memory only, until you decide to write them.</div><div class="line">Be careful before using the write command.</div><div class="line"></div><div class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n                                <span class="comment"># 创建分区</span></div><div class="line">Partition <span class="built_in">type</span>:</div><div class="line">   p   primary (0 primary, 0 extended, 4 free)</div><div class="line">   e   extended</div><div class="line">Select (default p):                                     <span class="comment">#直接回车，使用默认的`p`类型分区</span></div><div class="line">Using default response p</div><div class="line">Partition number (1-4, default 1):                      <span class="comment"># 回车，使用默认的分区号</span></div><div class="line">First sector (2048-60995327, default 2048):             <span class="comment"># 回车，使用默认的First sector</span></div><div class="line">Using default value 2048                                <span class="comment"># 设置第一个分区大小为500M，输入`+500M`</span></div><div class="line">Last sector, +sectors or +size&#123;K,M,G&#125; (2048-60995327, default 60995327): +500M  </div><div class="line">Partition 1 of <span class="built_in">type</span> Linux and of size 500 MiB is <span class="built_in">set</span></div><div class="line"></div><div class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): t</div><div class="line">Selected partition 1</div><div class="line">Hex code (<span class="built_in">type</span> L to list all codes): c                  <span class="comment"># 将第一个分区类型修改为`W95 FAT32(LBA)`</span></div><div class="line"></div><div class="line">WARNING: If you have created or modified any DOS 6.xpartitions, please see the fdisk manual page <span class="keyword">for</span> additionalinformation.</div><div class="line"></div><div class="line">Changed <span class="built_in">type</span> of partition <span class="string">'Linux'</span> to <span class="string">'W95 FAT32 (LBA)'</span></div><div class="line"></div><div class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): a                                 <span class="comment"># 设置第一个分区为启动分区</span></div><div class="line">Selected partition 1</div><div class="line"></div><div class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n                                 <span class="comment"># 创建分区</span></div><div class="line">Partition <span class="built_in">type</span>:</div><div class="line">   p   primary (1 primary, 0 extended, 3 free)</div><div class="line">   e   extended</div><div class="line">Select (default p):                                     <span class="comment"># 回车，使用默认分区类型</span></div><div class="line">Using default response p</div><div class="line">Partition number (2-4, default 2):                      <span class="comment"># 回车，使用默认分区号</span></div><div class="line">First sector (514048-60995327, default 514048):         <span class="comment"># 回车，使用默认First sector</span></div><div class="line">Using default value 514048</div><div class="line">Last sector, +sectors or +size&#123;K,M,G&#125; (514048-60995327, default 60995327):  <span class="comment">#回车，使用默认分区大小</span></div><div class="line">Using default value 60995327</div><div class="line">Partition 2 of <span class="built_in">type</span> Linux and of size 28.9 GiB is <span class="built_in">set</span></div><div class="line"></div><div class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w                                 <span class="comment"># 将修改写入磁盘</span></div><div class="line">The partition table has been altered!</div><div class="line"></div><div class="line">Calling ioctl() to re-read partition table.</div><div class="line">Syncing disks.</div></pre></td></tr></table></figure></p>
+<p>使用<code>mkfs</code>格式化分区:</p>
+<pre><code>$ sudo mkfs -t vfat -n &quot;BOOT&quot; /dev/sdb1
+$ sudo mkfs -L &quot;DATA&quot; /dev/sdb2
+</code></pre><p>将MBR数据写入设备</p>
+<pre><code>$ sudo dd conv=notrunc bs=440 count=1 \
+           if=/usr/share/syslinux/mbr.bin of=/dev/sdb
+</code></pre><p>将<code>syslinux</code>安装到第一个分区</p>
+<pre><code>$ sudo syslinux /dev/sdb1
+</code></pre><h3 id="拷贝文件到U盘"><a href="#拷贝文件到U盘" class="headerlink" title="拷贝文件到U盘"></a>拷贝文件到U盘</h3><ol>
+<li><p>挂载分区和ISO镜像：</p>
+<pre><code>mkdir BOOT &amp;&amp; sudo mount /dev/sdb1 BOOT
+mkdir DATA &amp;&amp; sudo mount /dev/sdb2 DATA
+mkdir DVD &amp;&amp; sudo mount -o loop /root/kickstart.iso DVD
+</code></pre></li>
+<li><p>拷贝<code>DVD/isolinux/</code>目录下的内容到<code>BOOT/</code>目录下：</p>
+<pre><code>sudo cp DVD/isolinux/* BOOT
+</code></pre></li>
+<li><p>重命名<code>isolinux.cfg</code>为<code>syslinux.cfg</code>:</p>
+<pre><code>sudo mv BOOT/isolinux.cfg BOOT/syslinux.cfg
+</code></pre></li>
+<li><p>拷贝<code>kickstart.iso</code>到<code>DATA</code>目录下：</p>
+<pre><code>sudo cp /root/kickstart.iso DATA/
+</code></pre></li>
+<li><p>修改<code>syslinux.cfg</code>文件：<br>在<code>syslinux.cfg</code>文件修改前的内容为：</p>
+<pre><code>label linux
+  menu label ^Install CentOS7
+  kernel vmlinuz
+  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 \
+        inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg
+</code></pre><p>修改后<code>syslinux.cfg</code>相对应的内容为：</p>
+<pre><code>label linux
+  menu label ^Install CentOS7
+  kernel vmlinuz
+  append initrd=initrd.img inst.stage2=hd:LABEL=DATA:/ inst.ks=hd:LABEL=BOOT:/ks.cfg 
+</code></pre></li>
+</ol>
+<ol>
+<li><p>如果需要支持EFI启动，则同时还需要将<code>DVD/{images,EFI}</code>目录下的内容拷贝到<code>BOOT</code>目录下</p>
+<pre><code>sudo cp DVD/{images,EFI} BOOT/ -r
+</code></pre></li>
+<li><p>修改<code>BOOT/EFI/BOOT/grub.cfg</code>文件：<br>文件<code>grub.cfg</code>修改前，相关内容为：</p>
+<pre><code>search --no-floppy --set=root -l &apos;CentOS 7 x86_64&apos;
+
+### BEGIN /etc/grub.d/10_linux ###
+menuentry &apos;Install RiverCloudSystem&apos; --class fedora \
+    --class gnu-linux --class gnu --class os {
+        linuxefi /images/pxeboot/vmlinuz \
+    inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 \
+    inst.ks=cdrom:/dev/cdrom:/isolinux/ks.cfg
+        initrdefi /images/pxeboot/initrd.img
+}
+</code></pre><p>文件<code>grub.cfg</code>修改后，相关内容为：</p>
+<pre><code>search --no-floppy --set=root -l &apos;BOOT&apos;                                   
+
+### BEGIN /etc/grub.d/10_linux ###                                        
+menuentry &apos;Install RiverCloudSystem&apos; --class fedora \
+    --class gnu-linux --class gnu --class os {
+        linuxefi /images/pxeboot/vmlinuz \
+    inst.stage2=hd:LABEL=DATA:/ \
+    inst.ks=hd:LABEL=BOOT:/ks.cfg 
+        initrdefi /images/pxeboot/initrd.img
+}
+</code></pre></li>
+<li>在<code>BOOT/EFI/BOOT</code>目录下创建一个名为<code>startup.nsh</code>的文件，其内只有一行，内容为：<code>BOOTX64</code>.</li>
+</ol>
+<blockquote>
+<p><strong>注意: 在支持EFI启动的ISO中，必须包括以下几个软件包：grub2-efi-2.02-0.29.el7.centos.x86_64.rpm,efibootmgr-0.8.0-7.el7.x86_64.rpm,efivar-libs-0.11-1.el7.x86_64.rpm,shim-0.9-2.el7.x86_64.rpm，否则在进行ISO安装的时候会报错</strong></p>
+</blockquote>
+<h2 id="卸载U盘安装测试"><a href="#卸载U盘安装测试" class="headerlink" title="卸载U盘安装测试"></a>卸载U盘安装测试</h2><h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://gist.github.com/pauljeff/4b9ad551cb6c35870d7c" target="_blank" rel="external">Kickstart driven CentOS 7 install from USB</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CentOS7/" rel="tag">#CentOS7</a>
+          
+            <a href="/tags/ISO/" rel="tag">#ISO</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/13/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/12/14/制作U盘启动盘/"
+           data-title="制作U盘启动盘" data-url="http://yoursite.com/2016/12/14/制作U盘启动盘/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="RY" />
+          <p class="site-author-name" itemprop="name">RY</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#制作U盘安装盘"><span class="nav-number">2.</span> <span class="nav-text">制作U盘安装盘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#首先格式化U盘"><span class="nav-number">2.1.</span> <span class="nav-text">首先格式化U盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为U盘创建分区"><span class="nav-number">2.2.</span> <span class="nav-text">为U盘创建分区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拷贝文件到U盘"><span class="nav-number">2.3.</span> <span class="nav-text">拷贝文件到U盘</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#卸载U盘安装测试"><span class="nav-number">3.</span> <span class="nav-text">卸载U盘安装测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文章"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">RY</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ry0117"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
