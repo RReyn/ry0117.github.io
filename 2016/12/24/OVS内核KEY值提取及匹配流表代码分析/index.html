@@ -1,0 +1,647 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Linux,LinuxKernel,OVS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="当开启OVS后，创建datapath类型为system的网桥并他添加相关接口，OVS网桥内接口在网卡接收到数据包后，数据包会先到OVS的内核模块openvswitch内，从数据包上提取key值，并使用key值匹配OVS内核模块中的流表，当匹配到相应的流表后，则执行流表上相应的动作；当在OVS内核缓存中匹配不到流表，则将key值信息通过NetLink发送给用户态的ovs-vswitchd守护进程，由">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OVS内核KEY值提取及匹配流表代码分析">
+<meta property="og:url" content="http://yoursite.com/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/index.html">
+<meta property="og:site_name" content="回忆是一条没有归途的路">
+<meta property="og:description" content="当开启OVS后，创建datapath类型为system的网桥并他添加相关接口，OVS网桥内接口在网卡接收到数据包后，数据包会先到OVS的内核模块openvswitch内，从数据包上提取key值，并使用key值匹配OVS内核模块中的流表，当匹配到相应的流表后，则执行流表上相应的动作；当在OVS内核缓存中匹配不到流表，则将key值信息通过NetLink发送给用户态的ovs-vswitchd守护进程，由">
+<meta property="og:updated_time" content="2016-12-24T10:32:11.374Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OVS内核KEY值提取及匹配流表代码分析">
+<meta name="twitter:description" content="当开启OVS后，创建datapath类型为system的网桥并他添加相关接口，OVS网桥内接口在网卡接收到数据包后，数据包会先到OVS的内核模块openvswitch内，从数据包上提取key值，并使用key值匹配OVS内核模块中的流表，当匹配到相应的流表后，则执行流表上相应的动作；当在OVS内核缓存中匹配不到流表，则将key值信息通过NetLink发送给用户态的ovs-vswitchd守护进程，由">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '6363975639506093000',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/"/>
+
+
+  <title> OVS内核KEY值提取及匹配流表代码分析 | 回忆是一条没有归途的路 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">回忆是一条没有归途的路</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                OVS内核KEY值提取及匹配流表代码分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-24T18:22:54+08:00" content="2016-12-24">
+              2016-12-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/OVS/" itemprop="url" rel="index">
+                    <span itemprop="name">OVS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/24/OVS内核KEY值提取及匹配流表代码分析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>当开启OVS后，创建<code>datapath</code>类型为<code>system</code>的网桥并他添加相关接口，OVS网桥内接口在网卡接收到数据包后，数据包会先到OVS的内核模块<code>openvswitch</code>内，从数据包上提取key值，并使用key值匹配OVS内核模块中的流表，当匹配到相应的流表后，则执行流表上相应的动作；当在OVS内核缓存中匹配不到流表，则将key值信息通过NetLink发送给用户态的<code>ovs-vswitchd</code>守护进程，由其来决定如何处理数据包。</p>
+<p>下面就Linux-3.19版本内核中OpenvSwitch内核模块中的提取Key值、匹配流表及执行流表动作相关的代码做一下分析。</p>
+<a id="more"></a>
+<h2 id="提取KEY值"><a href="#提取KEY值" class="headerlink" title="提取KEY值"></a>提取KEY值</h2><p>Key值信息是匹配流表的前提，key值中包括很多的信息，包括源MAC地址、目的MAC地址、VLAN信息、协议类型、源IP地址，目的IP地址、端口号等信息，所有的key值都可以从skb数据包中提取到。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div><div class="line">260</div><div class="line">261</div><div class="line">262</div><div class="line">263</div><div class="line">264</div><div class="line">265</div><div class="line">266</div><div class="line">267</div><div class="line">268</div><div class="line">269</div><div class="line">270</div><div class="line">271</div><div class="line">272</div><div class="line">273</div><div class="line">274</div><div class="line">275</div><div class="line">276</div><div class="line">277</div><div class="line">278</div><div class="line">279</div><div class="line">280</div><div class="line">281</div><div class="line">282</div><div class="line">283</div><div class="line">284</div><div class="line">285</div><div class="line">286</div><div class="line">287</div><div class="line">288</div><div class="line">289</div><div class="line">290</div><div class="line">291</div><div class="line">292</div><div class="line">293</div><div class="line">294</div><div class="line">295</div><div class="line">296</div><div class="line">297</div><div class="line">298</div><div class="line">299</div><div class="line">300</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">ovs_flow_key_extract</span><span class="params">(<span class="keyword">const</span> <span class="keyword">struct</span> ovs_tunnel_info *tun_info,</span></div><div class="line">			 <span class="keyword">struct</span> sk_buff *skb, <span class="keyword">struct</span> sw_flow_key *key)</div><div class="line">&#123;</div><div class="line">	<span class="comment">/* Extract metadata from packet. */</span></div><div class="line">	<span class="keyword">if</span> (tun_info) &#123;</div><div class="line">		<span class="built_in">memcpy</span>(&amp;key-&gt;tun_key, &amp;tun_info-&gt;tunnel, <span class="keyword">sizeof</span>(key-&gt;tun_key));</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (tun_info-&gt;options) &#123;</div><div class="line">			BUILD_BUG_ON((<span class="number">1</span> &lt;&lt; (<span class="keyword">sizeof</span>(tun_info-&gt;options_len) *</div><div class="line">						   <span class="number">8</span>)) - <span class="number">1</span></div><div class="line">					&gt; <span class="keyword">sizeof</span>(key-&gt;tun_opts));</div><div class="line">			<span class="built_in">memcpy</span>(GENEVE_OPTS(key, tun_info-&gt;options_len),</div><div class="line">			       tun_info-&gt;options, tun_info-&gt;options_len);</div><div class="line">			key-&gt;tun_opts_len = tun_info-&gt;options_len;</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			key-&gt;tun_opts_len = <span class="number">0</span>;</div><div class="line">		&#125;</div><div class="line">	&#125; <span class="keyword">else</span>  &#123;</div><div class="line">		key-&gt;tun_opts_len = <span class="number">0</span>;</div><div class="line">		<span class="built_in">memset</span>(&amp;key-&gt;tun_key, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tun_key));</div><div class="line">	&#125;</div><div class="line">	<span class="comment">/*根据skb相关信息，给key的相关变量赋值*/</span></div><div class="line">	key-&gt;phy.priority = skb-&gt;priority;</div><div class="line">	<span class="comment">/*设置key-&gt;phy.in_port为vport的接口序号*/</span></div><div class="line">	key-&gt;phy.in_port = OVS_CB(skb)-&gt;input_vport-&gt;port_no;</div><div class="line">	key-&gt;phy.skb_mark = skb-&gt;mark;</div><div class="line">	key-&gt;ovs_flow_hash = <span class="number">0</span>;</div><div class="line">	key-&gt;recirc_id = <span class="number">0</span>;</div><div class="line">	<span class="comment">/*提取skb中的MAC、协议、IP地址、端口信息等key值*/</span></div><div class="line">	<span class="keyword">return</span> key_extract(skb, key);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * key_extract - extracts a flow key from an Ethernet frame.</div><div class="line"> * @skb: sk_buff that contains the frame, with skb-&gt;data pointing to the</div><div class="line"> * Ethernet header</div><div class="line"> * @key: output flow key</div><div class="line"> *</div><div class="line"> * The caller must ensure that skb-&gt;len &gt;= ETH_HLEN.</div><div class="line"> *</div><div class="line"> * Returns 0 if successful, otherwise a negative errno value.</div><div class="line"> *</div><div class="line"> * Initializes @skb header pointers as follows:</div><div class="line"> *</div><div class="line"> *    - skb-&gt;mac_header: the Ethernet header.</div><div class="line"> *</div><div class="line"> *    - skb-&gt;network_header: just past the Ethernet header, or just past the</div><div class="line"> *      VLAN header, to the first byte of the Ethernet payload.</div><div class="line"> *</div><div class="line"> *    - skb-&gt;transport_header: If key-&gt;eth.type is ETH_P_IP or ETH_P_IPV6</div><div class="line"> *      on output, then just past the IP header, if one is present and</div><div class="line"> *      of a correct length, otherwise the same as skb-&gt;network_header.</div><div class="line"> *      For other key-&gt;eth.type values it is left untouched.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">key_extract</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb, <span class="keyword">struct</span> sw_flow_key *key)</span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">int</span> error;</div><div class="line">	<span class="keyword">struct</span> ethhdr *eth;</div><div class="line"></div><div class="line">	<span class="comment">/* Flags are always used as part of stats */</span></div><div class="line">	key-&gt;tp.flags = <span class="number">0</span>;</div><div class="line">	<span class="comment">/*重置L2层头指针*/</span></div><div class="line">	skb_reset_mac_header(skb);</div><div class="line"></div><div class="line">	<span class="comment">/* Link layer.  We are guaranteed to have at least the 14 byte Ethernet</span></div><div class="line">	 * header in the linear data area.</div><div class="line">	 */</div><div class="line">	<span class="comment">/*获取二层头部指针，并提取源MAC及目的MAC信息到key中*/</span></div><div class="line">	eth = eth_hdr(skb);</div><div class="line">	ether_addr_copy(key-&gt;eth.src, eth-&gt;h_source);</div><div class="line">	ether_addr_copy(key-&gt;eth.dst, eth-&gt;h_dest);</div><div class="line">	<span class="comment">/*将skb-&gt;data指向L2的MAC地址结束的地址处，</span></div><div class="line">	* 如果带有VLAN信息，则skb-&gt;data指向vlan相关信息的开头</div><div class="line">	* 如果不带vlan信息，则skb-&gt;data则指向eth.type字段处*/</div><div class="line">	__skb_pull(skb, <span class="number">2</span> * ETH_ALEN);</div><div class="line">	<span class="comment">/* We are going to push all headers that we pull, so no need to</span></div><div class="line">	 * update skb-&gt;csum here.</div><div class="line">	 */</div><div class="line">	<span class="comment">/*提取vlan信息到key中*/</span></div><div class="line">	key-&gt;eth.tci = <span class="number">0</span>;</div><div class="line">	<span class="keyword">if</span> (vlan_tx_tag_present(skb))</div><div class="line">		key-&gt;eth.tci = htons(skb-&gt;vlan_tci);</div><div class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (eth-&gt;h_proto == htons(ETH_P_8021Q))</div><div class="line">		<span class="keyword">if</span> (unlikely(parse_vlan(skb, key)))</div><div class="line">			<span class="keyword">return</span> -ENOMEM;</div><div class="line">	<span class="comment">/*提取ether type数据包类型如ETH_P_IP、ETH_P_ARP、ETH_P_IPV6等*/</span></div><div class="line">	key-&gt;eth.type = parse_ethertype(skb);</div><div class="line">	<span class="keyword">if</span> (unlikely(key-&gt;eth.type == htons(<span class="number">0</span>)))</div><div class="line">		<span class="keyword">return</span> -ENOMEM;</div><div class="line">	<span class="comment">/*重置L3头部指针及MAC长度，保证skb-&gt;network_header指向正确的位置*/</span></div><div class="line">	skb_reset_network_header(skb);</div><div class="line">	skb_reset_mac_len(skb);</div><div class="line">	__skb_push(skb, skb-&gt;data - skb_mac_header(skb));</div><div class="line"></div><div class="line">	<span class="comment">/* Network layer. */</span></div><div class="line">	<span class="comment">/*IP协议数据包*/</span></div><div class="line">	<span class="keyword">if</span> (key-&gt;eth.type == htons(ETH_P_IP)) &#123;</div><div class="line">		<span class="keyword">struct</span> iphdr *nh;</div><div class="line">		__be16 offset;</div><div class="line">		<span class="comment">/*检查IP数据包的合法性，若合法则设置skb-&gt;transport_header*/</span></div><div class="line">		error = check_iphdr(skb);</div><div class="line">		<span class="keyword">if</span> (unlikely(error)) &#123;</div><div class="line">			<span class="comment">/*不合法的IP数据包*/</span></div><div class="line">			<span class="built_in">memset</span>(&amp;key-&gt;ip, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;ip));</div><div class="line">			<span class="built_in">memset</span>(&amp;key-&gt;ipv4, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;ipv4));</div><div class="line">			<span class="keyword">if</span> (error == -EINVAL) &#123;</div><div class="line">				<span class="comment">/* 此处不知道为何将L4头设置为L3层头部，</span></div><div class="line">				* 也不知道为何error=0,后面搞清楚了在回来修改*/</div><div class="line">				skb-&gt;transport_header = skb-&gt;network_header;</div><div class="line">				error = <span class="number">0</span>;</div><div class="line">			&#125;</div><div class="line">			<span class="keyword">return</span> error;</div><div class="line">		&#125;</div><div class="line">		<span class="comment">/*获取L3层头部指针，并提取源IP及目的IP信息到key中*/</span></div><div class="line">		nh = ip_hdr(skb);</div><div class="line">		key-&gt;ipv4.addr.src = nh-&gt;saddr;</div><div class="line">		key-&gt;ipv4.addr.dst = nh-&gt;daddr;</div><div class="line">		<span class="comment">/*提取IP的四层协议信息、TOS及ttl信息到key中*/</span></div><div class="line">		key-&gt;ip.proto = nh-&gt;protocol;</div><div class="line">		key-&gt;ip.tos = nh-&gt;tos;</div><div class="line">		key-&gt;ip.ttl = nh-&gt;ttl;</div><div class="line">		<span class="comment">/*</span></div><div class="line">		* 从L3层中提取IP分片信息</div><div class="line">		* 对IP分片中的几个标志不是很清楚，暂时不做说明</div><div class="line">		*/</div><div class="line">		offset = nh-&gt;frag_off &amp; htons(IP_OFFSET);</div><div class="line">		<span class="keyword">if</span> (offset) &#123;</div><div class="line">			key-&gt;ip.frag = OVS_FRAG_TYPE_LATER;</div><div class="line">			<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span> (nh-&gt;frag_off &amp; htons(IP_MF) ||</div><div class="line">			skb_shinfo(skb)-&gt;gso_type &amp; SKB_GSO_UDP)</div><div class="line">			key-&gt;ip.frag = OVS_FRAG_TYPE_FIRST;</div><div class="line">		<span class="keyword">else</span></div><div class="line">			key-&gt;ip.frag = OVS_FRAG_TYPE_NONE;</div><div class="line"></div><div class="line">		<span class="comment">/* Transport layer. */</span></div><div class="line">		<span class="comment">/*TCP协议数据包*/</span></div><div class="line">		<span class="keyword">if</span> (key-&gt;ip.proto == IPPROTO_TCP) &#123;</div><div class="line">			<span class="keyword">if</span> (tcphdr_ok(skb)) &#123;</div><div class="line">				<span class="comment">/*获取tcp四层头部，提取源端口及目的端口信息到key中*/</span></div><div class="line">				<span class="keyword">struct</span> tcphdr *tcp = tcp_hdr(skb);</div><div class="line">				key-&gt;tp.src = tcp-&gt;source;</div><div class="line">				key-&gt;tp.dst = tcp-&gt;dest;</div><div class="line">				key-&gt;tp.flags = TCP_FLAGS_BE16(tcp);</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		<span class="comment">/*UDP协议数据包*/</span></div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;ip.proto == IPPROTO_UDP) &#123;</div><div class="line">			<span class="keyword">if</span> (udphdr_ok(skb)) &#123;</div><div class="line">				<span class="comment">/*获取UDP四层头部，提取源端口及目的端口信息到key中*/</span></div><div class="line">				<span class="keyword">struct</span> udphdr *udp = udp_hdr(skb);</div><div class="line">				key-&gt;tp.src = udp-&gt;source;</div><div class="line">				key-&gt;tp.dst = udp-&gt;dest;</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		<span class="comment">/*SCTP协议数据包*/</span></div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;ip.proto == IPPROTO_SCTP) &#123;</div><div class="line">			<span class="keyword">if</span> (sctphdr_ok(skb)) &#123;</div><div class="line">				<span class="comment">/*获取SCTP四层头部，提取源端口及目的端口到key中*/</span></div><div class="line">				<span class="keyword">struct</span> sctphdr *sctp = sctp_hdr(skb);</div><div class="line">				key-&gt;tp.src = sctp-&gt;source;</div><div class="line">				key-&gt;tp.dst = sctp-&gt;dest;</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		<span class="comment">/*ICMP协议数据包*/</span></div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;ip.proto == IPPROTO_ICMP) &#123;</div><div class="line">			<span class="keyword">if</span> (icmphdr_ok(skb)) &#123;</div><div class="line">				<span class="comment">/*获取ICMP头部，并提取ICMP 类型及代码字段到key中*/</span></div><div class="line">				<span class="keyword">struct</span> icmphdr *icmp = icmp_hdr(skb);</div><div class="line">				<span class="comment">/* The ICMP type and code fields use the 16-bit</span></div><div class="line">				 * transport port fields, so we need to store</div><div class="line">				 * them in 16-bit network byte order. */</div><div class="line">				key-&gt;tp.src = htons(icmp-&gt;type);</div><div class="line">				key-&gt;tp.dst = htons(icmp-&gt;code);</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	<span class="comment">/*ARP协议或者RARP协议数据包*/</span></div><div class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;eth.type == htons(ETH_P_ARP) ||</div><div class="line">		   key-&gt;eth.type == htons(ETH_P_RARP)) &#123;</div><div class="line">		<span class="keyword">struct</span> arp_eth_header *arp;</div><div class="line">		<span class="keyword">bool</span> arp_available = arphdr_ok(skb);</div><div class="line">		<span class="comment">/*获取ARP头部指针*/</span></div><div class="line">		arp = (<span class="keyword">struct</span> arp_eth_header *)skb_network_header(skb);</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (arp_available &amp;&amp;</div><div class="line">		    arp-&gt;ar_hrd == htons(ARPHRD_ETHER) &amp;&amp;</div><div class="line">		    arp-&gt;ar_pro == htons(ETH_P_IP) &amp;&amp;</div><div class="line">		    arp-&gt;ar_hln == ETH_ALEN &amp;&amp;</div><div class="line">		    arp-&gt;ar_pln == <span class="number">4</span>) &#123;</div><div class="line">			<span class="comment">/*提取ARP option字段到key中*/</span></div><div class="line">			<span class="comment">/* We only match on the lower 8 bits of the opcode. */</span></div><div class="line">			<span class="keyword">if</span> (ntohs(arp-&gt;ar_op) &lt;= <span class="number">0xff</span>)</div><div class="line">				key-&gt;ip.proto = ntohs(arp-&gt;ar_op);</div><div class="line">			<span class="keyword">else</span></div><div class="line">				key-&gt;ip.proto = <span class="number">0</span>;</div><div class="line">			<span class="comment">/*提取源MAC、目的MAC、源IP及目的MAC信息到key中*/</span></div><div class="line">			<span class="built_in">memcpy</span>(&amp;key-&gt;ipv4.addr.src, arp-&gt;ar_sip, <span class="keyword">sizeof</span>(key-&gt;ipv4.addr.src));</div><div class="line">			<span class="built_in">memcpy</span>(&amp;key-&gt;ipv4.addr.dst, arp-&gt;ar_tip, <span class="keyword">sizeof</span>(key-&gt;ipv4.addr.dst));</div><div class="line">			ether_addr_copy(key-&gt;ipv4.arp.sha, arp-&gt;ar_sha);</div><div class="line">			ether_addr_copy(key-&gt;ipv4.arp.tha, arp-&gt;ar_tha);</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			<span class="built_in">memset</span>(&amp;key-&gt;ip, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;ip));</div><div class="line">			<span class="built_in">memset</span>(&amp;key-&gt;ipv4, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;ipv4));</div><div class="line">		&#125;</div><div class="line">	<span class="comment">/*去提取MPLS信息到key中*/</span></div><div class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (eth_p_mpls(key-&gt;eth.type)) &#123;</div><div class="line">		<span class="keyword">size_t</span> stack_len = MPLS_HLEN;</div><div class="line"></div><div class="line">		<span class="comment">/* In the presence of an MPLS label stack the end of the L2</span></div><div class="line">		 * header and the beginning of the L3 header differ.</div><div class="line">		 *</div><div class="line">		 * Advance network_header to the beginning of the L3</div><div class="line">		 * header. mac_len corresponds to the end of the L2 header.</div><div class="line">		 */</div><div class="line">		<span class="keyword">while</span> (<span class="number">1</span>) &#123;</div><div class="line">			__be32 lse;</div><div class="line"></div><div class="line">			error = check_header(skb, skb-&gt;mac_len + stack_len);</div><div class="line">			<span class="keyword">if</span> (unlikely(error))</div><div class="line">				<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">			<span class="built_in">memcpy</span>(&amp;lse, skb_network_header(skb), MPLS_HLEN);</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (stack_len == MPLS_HLEN)</div><div class="line">				<span class="built_in">memcpy</span>(&amp;key-&gt;mpls.top_lse, &amp;lse, MPLS_HLEN);</div><div class="line"></div><div class="line">			skb_set_network_header(skb, skb-&gt;mac_len + stack_len);</div><div class="line">			<span class="keyword">if</span> (lse &amp; htonl(MPLS_LS_S_MASK))</div><div class="line">				<span class="keyword">break</span>;</div><div class="line"></div><div class="line">			stack_len += MPLS_HLEN;</div><div class="line">		&#125;</div><div class="line">	<span class="comment">/*IPv6协议，提取IPv6相关信息到key中 */</span></div><div class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;eth.type == htons(ETH_P_IPV6)) &#123;</div><div class="line">		<span class="keyword">int</span> nh_len;             <span class="comment">/* IPv6 Header + Extensions */</span></div><div class="line"></div><div class="line">		nh_len = parse_ipv6hdr(skb, key);</div><div class="line">		<span class="keyword">if</span> (unlikely(nh_len &lt; <span class="number">0</span>)) &#123;</div><div class="line">			<span class="built_in">memset</span>(&amp;key-&gt;ip, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;ip));</div><div class="line">			<span class="built_in">memset</span>(&amp;key-&gt;ipv6.addr, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;ipv6.addr));</div><div class="line">			<span class="keyword">if</span> (nh_len == -EINVAL) &#123;</div><div class="line">				skb-&gt;transport_header = skb-&gt;network_header;</div><div class="line">				error = <span class="number">0</span>;</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				error = nh_len;</div><div class="line">			&#125;</div><div class="line">			<span class="keyword">return</span> error;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (key-&gt;ip.frag == OVS_FRAG_TYPE_LATER)</div><div class="line">			<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">		<span class="keyword">if</span> (skb_shinfo(skb)-&gt;gso_type &amp; SKB_GSO_UDP)</div><div class="line">			key-&gt;ip.frag = OVS_FRAG_TYPE_FIRST;</div><div class="line"></div><div class="line">		<span class="comment">/* Transport layer. */</span></div><div class="line">		<span class="keyword">if</span> (key-&gt;ip.proto == NEXTHDR_TCP) &#123;</div><div class="line">			<span class="keyword">if</span> (tcphdr_ok(skb)) &#123;</div><div class="line">				<span class="keyword">struct</span> tcphdr *tcp = tcp_hdr(skb);</div><div class="line">				key-&gt;tp.src = tcp-&gt;source;</div><div class="line">				key-&gt;tp.dst = tcp-&gt;dest;</div><div class="line">				key-&gt;tp.flags = TCP_FLAGS_BE16(tcp);</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;ip.proto == NEXTHDR_UDP) &#123;</div><div class="line">			<span class="keyword">if</span> (udphdr_ok(skb)) &#123;</div><div class="line">				<span class="keyword">struct</span> udphdr *udp = udp_hdr(skb);</div><div class="line">				key-&gt;tp.src = udp-&gt;source;</div><div class="line">				key-&gt;tp.dst = udp-&gt;dest;</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;ip.proto == NEXTHDR_SCTP) &#123;</div><div class="line">			<span class="keyword">if</span> (sctphdr_ok(skb)) &#123;</div><div class="line">				<span class="keyword">struct</span> sctphdr *sctp = sctp_hdr(skb);</div><div class="line">				key-&gt;tp.src = sctp-&gt;source;</div><div class="line">				key-&gt;tp.dst = sctp-&gt;dest;</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (key-&gt;ip.proto == NEXTHDR_ICMP) &#123;</div><div class="line">			<span class="keyword">if</span> (icmp6hdr_ok(skb)) &#123;</div><div class="line">				error = parse_icmpv6(skb, key, nh_len);</div><div class="line">				<span class="keyword">if</span> (error)</div><div class="line">					<span class="keyword">return</span> error;</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				<span class="built_in">memset</span>(&amp;key-&gt;tp, <span class="number">0</span>, <span class="keyword">sizeof</span>(key-&gt;tp));</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="根据KEY值匹配流表"><a href="#根据KEY值匹配流表" class="headerlink" title="根据KEY值匹配流表"></a>根据KEY值匹配流表</h2><p>通过<code>ovs_flow_key_extract</code>函数及<code>key_extract</code>函数从<code>skb</code>中提取所有需要的<code>key</code>值，下面就是使用<code>key</code>值来匹配OVS内核模块openvswitch中缓存的流表信息，并在匹配到流表后执行流表中相应的动作处理数据包。若在内核中未匹配到流表，则通过Netlink消息将key值发送到用户态ovs-vswitchd进程，由用户态进程来决定如何处理数据包</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* Must be called with rcu_read_lock. */</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">ovs_dp_process_packet</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb, <span class="keyword">struct</span> sw_flow_key *key)</span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> vport *p = OVS_CB(skb)-&gt;input_vport;</div><div class="line">	<span class="keyword">struct</span> datapath *dp = p-&gt;dp;</div><div class="line">	<span class="keyword">struct</span> sw_flow *flow;</div><div class="line">	<span class="keyword">struct</span> sw_flow_actions *sf_acts;</div><div class="line">	<span class="keyword">struct</span> dp_stats_percpu *stats;</div><div class="line">	u64 *stats_counter;</div><div class="line">	u32 n_mask_hit;</div><div class="line">	<span class="comment">/*获取每CPU变量dp-&gt;stats_percpu*/</span></div><div class="line">	stats = this_cpu_ptr(dp-&gt;stats_percpu);</div><div class="line"></div><div class="line">	<span class="comment">/* Look up flow. */</span></div><div class="line">	<span class="comment">/*根据key值遍历所有的流表*/</span></div><div class="line">	flow = ovs_flow_tbl_lookup_stats(&amp;dp-&gt;table, key, &amp;n_mask_hit);</div><div class="line">	<span class="keyword">if</span> (unlikely(!flow)) &#123;</div><div class="line">		<span class="comment">/*</span></div><div class="line">		* 未匹配到任何流表，则将key值封装到Netlink消息中通过</div><div class="line">		* netlink发送到用户态ovs-vswitchd进程</div><div class="line">		* 由用户态进程来决定如何处理数据包</div><div class="line">		*/</div><div class="line">		<span class="keyword">struct</span> dp_upcall_info upcall;</div><div class="line">		<span class="keyword">int</span> error;</div><div class="line"></div><div class="line">		upcall.cmd = OVS_PACKET_CMD_MISS;</div><div class="line">		upcall.userdata = <span class="literal">NULL</span>;</div><div class="line">		upcall.portid = ovs_vport_find_upcall_portid(p, skb);</div><div class="line">		upcall.egress_tun_info = <span class="literal">NULL</span>;</div><div class="line">		<span class="comment">/*封装Netlink消息并发送给用户态ovs-vswitchd进程*/</span></div><div class="line">		error = ovs_dp_upcall(dp, skb, key, &amp;upcall);</div><div class="line">		<span class="keyword">if</span> (unlikely(error))</div><div class="line">			kfree_skb(skb);</div><div class="line">		<span class="keyword">else</span></div><div class="line">			consume_skb(skb);</div><div class="line">		stats_counter = &amp;stats-&gt;n_missed;</div><div class="line">		<span class="keyword">goto</span> out;</div><div class="line">	&#125;</div><div class="line">	<span class="comment">/*查询到流表后，更新相关流表的信息，包括流表匹配的包数及字节数*/</span></div><div class="line">	ovs_flow_stats_update(flow, key-&gt;tp.flags, skb);</div><div class="line">	<span class="comment">/*获取匹配的流表的执行动作*/</span></div><div class="line">	sf_acts = rcu_dereference(flow-&gt;sf_acts);</div><div class="line">	<span class="comment">/*执行匹配流表的动作*/</span></div><div class="line">	ovs_execute_actions(dp, skb, sf_acts, key);</div><div class="line"></div><div class="line">	stats_counter = &amp;stats-&gt;n_hit;</div><div class="line"></div><div class="line">out:</div><div class="line">	<span class="comment">/* Update datapath statistics. */</span></div><div class="line">	u64_stats_update_begin(&amp;stats-&gt;syncp);</div><div class="line">	(*stats_counter)++;</div><div class="line">	stats-&gt;n_mask_hit += n_mask_hit;</div><div class="line">	u64_stats_update_end(&amp;stats-&gt;syncp);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="执行流表ACTION"><a href="#执行流表ACTION" class="headerlink" title="执行流表ACTION"></a>执行流表ACTION</h2><p>匹配到对应的流表后，从流表中获取流表的动作，循环遍历所有的<code>flow action</code>，执行相应的<code>action</code>动作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div></pre></td><td class="code"><pre><div class="line">/* Execute a list of actions against &apos;skb&apos;. */</div><div class="line">int</div><div class="line">ovs_execute_actions(struct datapath *dp, struct sk_buff *skb,</div><div class="line">			const struct sw_flow_actions *acts,</div><div class="line">			struct sw_flow_key *key)</div><div class="line">&#123;</div><div class="line">	int level = this_cpu_read(exec_actions_level);</div><div class="line">	int err;</div><div class="line"></div><div class="line">	this_cpu_inc(exec_actions_level);</div><div class="line">	OVS_CB(skb)-&gt;egress_tun_info = NULL;</div><div class="line">	/*执行流表动作*/</div><div class="line">	err = do_execute_actions(dp, skb, key,</div><div class="line">				 acts-&gt;actions, acts-&gt;actions_len);</div><div class="line">	/*不知道这个process_deferred_actions具体是干什么的*/</div><div class="line">	if (!level)</div><div class="line">		process_deferred_actions(dp);</div><div class="line"></div><div class="line">	this_cpu_dec(exec_actions_level);</div><div class="line">	return err;</div><div class="line">&#125;</div><div class="line"></div><div class="line">/* Execute a list of actions against &apos;skb&apos;. */</div><div class="line">static int</div><div class="line">do_execute_actions(struct datapath *dp, struct sk_buff *skb,</div><div class="line">			      struct sw_flow_key *key,</div><div class="line">			      const struct nlattr *attr, int len)</div><div class="line">&#123;</div><div class="line">	/* Every output action needs a separate clone of &apos;skb&apos;, but the common</div><div class="line">	 * case is just a single output action, so that doing a clone and</div><div class="line">	 * then freeing the original skbuff is wasteful.  So the following code</div><div class="line">	 * is slightly obscure just to avoid that.</div><div class="line">	 */</div><div class="line">	int prev_port = -1;</div><div class="line">	const struct nlattr *a;</div><div class="line">	int rem;</div><div class="line"></div><div class="line">	for (a = attr, rem = len; rem &gt; 0;</div><div class="line">	     a = nla_next(a, &amp;rem)) &#123;</div><div class="line">		int err = 0;</div><div class="line"></div><div class="line">		if (unlikely(prev_port != -1)) &#123;</div><div class="line">			/*设置了output接口，克隆一份skb将数据包从</div><div class="line">			* prv_port接口发送出去*/</div><div class="line">			struct sk_buff *out_skb = skb_clone(skb, GFP_ATOMIC);</div><div class="line"></div><div class="line">			if (out_skb)</div><div class="line">				do_output(dp, out_skb, prev_port);</div><div class="line"></div><div class="line">			prev_port = -1;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		switch (nla_type(a)) &#123;</div><div class="line">		/*数据包发送的端口号*/</div><div class="line">		case OVS_ACTION_ATTR_OUTPUT:</div><div class="line">			prev_port = nla_get_u32(a);</div><div class="line">			break;</div><div class="line">		/*将数据包发送到用户态进程*/</div><div class="line">		case OVS_ACTION_ATTR_USERSPACE:</div><div class="line">			output_userspace(dp, skb, key, a);</div><div class="line">			break;</div><div class="line">		/*为key-&gt;ovs_flow_hash赋值*/</div><div class="line">		case OVS_ACTION_ATTR_HASH:</div><div class="line">			execute_hash(skb, key, a);</div><div class="line">			break;</div><div class="line">		/*MPLS处理，不了解MPLS，忽略*/</div><div class="line">		case OVS_ACTION_ATTR_PUSH_MPLS:</div><div class="line">			err = push_mpls(skb, key, nla_data(a));</div><div class="line">			break;</div><div class="line">		/*MPLS处理，忽略*/</div><div class="line">		case OVS_ACTION_ATTR_POP_MPLS:</div><div class="line">			err = pop_mpls(skb, key, nla_get_be16(a));</div><div class="line">			break;</div><div class="line">		/*设置VLAN tag*/</div><div class="line">		case OVS_ACTION_ATTR_PUSH_VLAN:</div><div class="line">			err = push_vlan(skb, key, nla_data(a));</div><div class="line">			break;</div><div class="line">		/*去Vlan tag*/</div><div class="line">		case OVS_ACTION_ATTR_POP_VLAN:</div><div class="line">			err = pop_vlan(skb, key);</div><div class="line">			break;</div><div class="line">		/*将skb及key添加到defered action中*/</div><div class="line">		case OVS_ACTION_ATTR_RECIRC:</div><div class="line">			err = execute_recirc(dp, skb, key, a, rem);</div><div class="line">			if (nla_is_last(a, rem)) &#123;</div><div class="line">				/* If this is the last action, the skb has</div><div class="line">				 * been consumed or freed.</div><div class="line">				 * Return immediately.</div><div class="line">				 */</div><div class="line">				return err;</div><div class="line">			&#125;</div><div class="line">			break;</div><div class="line">		/*根据修改的动作，对数据包进行修改*/</div><div class="line">		case OVS_ACTION_ATTR_SET:</div><div class="line">			err = execute_set_action(skb, key, nla_data(a));</div><div class="line">			break;</div><div class="line"></div><div class="line">		case OVS_ACTION_ATTR_SAMPLE:</div><div class="line">			err = sample(dp, skb, key, a);</div><div class="line">			break;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		if (unlikely(err)) &#123;</div><div class="line">			kfree_skb(skb);</div><div class="line">			return err;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	if (prev_port != -1)</div><div class="line">		do_output(dp, skb, prev_port);</div><div class="line">	else</div><div class="line">		consume_skb(skb);</div><div class="line"></div><div class="line">	return 0;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="OUTPUT-ACTION"><a href="#OUTPUT-ACTION" class="headerlink" title="OUTPUT ACTION"></a>OUTPUT ACTION</h3><p>流表的<code>OUTPUT</code>动作指定了数据包发送的出接口信息，调用<code>do_output</code>-&gt;<code>ovs_vport_send</code>-&gt;<code>vport-&gt;ops-&gt;send</code>发送函数将数据包从<code>output action</code>对应的接口发送出去。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line">/*do_outpu发送数据包*/</div><div class="line">static void</div><div class="line">do_output(struct datapath *dp, struct sk_buff *skb, int out_port)</div><div class="line">&#123;</div><div class="line">	struct vport *vport = ovs_vport_rcu(dp, out_port);</div><div class="line"></div><div class="line">	if (likely(vport))</div><div class="line">		ovs_vport_send(vport, skb);</div><div class="line">	else</div><div class="line">		kfree_skb(skb);</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> *	ovs_vport_send - send a packet on a device</div><div class="line"> *</div><div class="line"> * @vport: vport on which to send the packet</div><div class="line"> * @skb: skb to send</div><div class="line"> *</div><div class="line"> * Sends the given packet and returns the length of data sent.  Either ovs</div><div class="line"> * lock or rcu_read_lock must be held.</div><div class="line"> */</div><div class="line">int ovs_vport_send(struct vport *vport, struct sk_buff *skb)</div><div class="line">&#123;</div><div class="line">	/* 调用vport-&gt;ops-&gt;send回调函数发送数据包 */ </div><div class="line"></div><div class="line">	int sent = vport-&gt;ops-&gt;send(vport, skb);</div><div class="line"></div><div class="line">	if (likely(sent &gt; 0)) &#123;</div><div class="line">		struct pcpu_sw_netstats *stats;</div><div class="line">		/*发送成功后更新每CPU变量vport-&gt;percpu_stats中的发送包数及发送字节数*/</div><div class="line">		stats = this_cpu_ptr(vport-&gt;percpu_stats);</div><div class="line"></div><div class="line">		u64_stats_update_begin(&amp;stats-&gt;syncp);</div><div class="line">		stats-&gt;tx_packets++;</div><div class="line">		stats-&gt;tx_bytes += sent;</div><div class="line">		u64_stats_update_end(&amp;stats-&gt;syncp);</div><div class="line">	&#125; else if (sent &lt; 0) &#123;</div><div class="line">		ovs_vport_record_error(vport, VPORT_E_TX_ERROR);</div><div class="line">	&#125; else &#123;</div><div class="line">		ovs_vport_record_error(vport, VPORT_E_TX_DROPPED);</div><div class="line">	&#125;</div><div class="line">	return sent;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当OVS接口类型为<code>system</code>时，<code>vport-&gt;ops-&gt;send</code>函数为<code>netdev_send</code>:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*此函数即为OVS流表output action 发送数据包时的函数*/</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">netdev_send</span><span class="params">(<span class="keyword">struct</span> vport *vport, <span class="keyword">struct</span> sk_buff *skb)</span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> netdev_vport *netdev_vport = netdev_vport_priv(vport);</div><div class="line">	<span class="keyword">int</span> mtu = netdev_vport-&gt;dev-&gt;mtu;</div><div class="line">	<span class="keyword">int</span> len;</div><div class="line">	<span class="comment">/*如果未开启gso且数据包长度大于MTU，则释放数据包*/</span></div><div class="line">	<span class="keyword">if</span> (unlikely(packet_length(skb) &gt; mtu &amp;&amp; !skb_is_gso(skb))) &#123;</div><div class="line">		net_warn_ratelimited(<span class="string">"%s: dropped over-mtu packet: %d &gt; %d\n"</span>,</div><div class="line">				     netdev_vport-&gt;dev-&gt;name,</div><div class="line">				     packet_length(skb), mtu);</div><div class="line">		<span class="keyword">goto</span> drop;</div><div class="line">	&#125;</div><div class="line">	<span class="comment">/*设置skb-&gt;dev为output action网口*/</span></div><div class="line">	skb-&gt;dev = netdev_vport-&gt;dev;</div><div class="line">	len = skb-&gt;len;</div><div class="line">	<span class="comment">/*最后调用dev_queue_xmit发送数据包*/</span></div><div class="line">	dev_queue_xmit(skb);</div><div class="line"></div><div class="line">	<span class="keyword">return</span> len;</div><div class="line"></div><div class="line">drop:</div><div class="line">	kfree_skb(skb);</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="SET-ACTION"><a href="#SET-ACTION" class="headerlink" title="SET ACTION"></a>SET ACTION</h3><p>流表<code>SET</code>动作会修改数据包中指定的信息，如<code>skb-&gt;priority</code> <code>skb-&gt;mark</code>等信息。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">execute_set_action</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb, <span class="keyword">struct</span> sw_flow_key *key,</span></div><div class="line">			      <span class="keyword">const</span> <span class="keyword">struct</span> nlattr *nested_attr)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">int</span> err = <span class="number">0</span>;</div><div class="line"></div><div class="line">	<span class="keyword">switch</span> (nla_type(nested_attr)) &#123;</div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_PRIORITY:</div><div class="line">		skb-&gt;priority = nla_get_u32(nested_attr);</div><div class="line">		key-&gt;phy.priority = skb-&gt;priority;</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_SKB_MARK:</div><div class="line">		skb-&gt;mark = nla_get_u32(nested_attr);</div><div class="line">		key-&gt;phy.skb_mark = skb-&gt;mark;</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_TUNNEL_INFO:</div><div class="line">		OVS_CB(skb)-&gt;egress_tun_info = nla_data(nested_attr);</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_ETHERNET:</div><div class="line">		err = set_eth_addr(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_IPV4:</div><div class="line">		err = set_ipv4(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_IPV6:</div><div class="line">		err = set_ipv6(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_TCP:</div><div class="line">		err = set_tcp(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_UDP:</div><div class="line">		err = set_udp(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_SCTP:</div><div class="line">		err = set_sctp(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line"></div><div class="line">	<span class="keyword">case</span> OVS_KEY_ATTR_MPLS:</div><div class="line">		err = set_mpls(skb, key, nla_data(nested_attr));</div><div class="line">		<span class="keyword">break</span>;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> err;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="PUSH-VLAN-ACTION"><a href="#PUSH-VLAN-ACTION" class="headerlink" title="PUSH_VLAN ACTION"></a>PUSH_VLAN ACTION</h3><p>流表<code>PUSH_VLAN</code>动作会在数据包中添加对应的VLAN tag信息。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">push_vlan</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb, <span class="keyword">struct</span> sw_flow_key *key,</span></div><div class="line">		     <span class="keyword">const</span> <span class="keyword">struct</span> ovs_action_push_vlan *vlan)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span> (vlan_tx_tag_present(skb))</div><div class="line">		invalidate_flow_key(key);</div><div class="line">	<span class="keyword">else</span></div><div class="line">		key-&gt;eth.tci = vlan-&gt;vlan_tci;</div><div class="line">	<span class="keyword">return</span> skb_vlan_push(skb, vlan-&gt;vlan_tpid,</div><div class="line">			     ntohs(vlan-&gt;vlan_tci) &amp; ~VLAN_TAG_PRESENT);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">skb_vlan_push</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb, __be16 vlan_proto, u16 vlan_tci)</span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">if</span> (vlan_tx_tag_present(skb)) &#123;</div><div class="line">		<span class="keyword">unsigned</span> <span class="keyword">int</span> offset = skb-&gt;data - skb_mac_header(skb);</div><div class="line">		<span class="keyword">int</span> err;</div><div class="line"></div><div class="line">		<span class="comment">/* __vlan_insert_tag expect skb-&gt;data pointing to mac header.</span></div><div class="line">		 * So change skb-&gt;data before calling it and change back to</div><div class="line">		 * original position later</div><div class="line">		 */</div><div class="line">		__skb_push(skb, offset);</div><div class="line">		err = __vlan_insert_tag(skb, skb-&gt;vlan_proto,</div><div class="line">					vlan_tx_tag_get(skb));</div><div class="line">		<span class="keyword">if</span> (err)</div><div class="line">			<span class="keyword">return</span> err;</div><div class="line">		skb-&gt;protocol = skb-&gt;vlan_proto;</div><div class="line">		skb-&gt;mac_len += VLAN_HLEN;</div><div class="line">		__skb_pull(skb, offset);</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (skb-&gt;ip_summed == CHECKSUM_COMPLETE)</div><div class="line">			skb-&gt;csum = csum_add(skb-&gt;csum, csum_partial(skb-&gt;data</div><div class="line">					+ (<span class="number">2</span> * ETH_ALEN), VLAN_HLEN, <span class="number">0</span>));</div><div class="line">	&#125;</div><div class="line">	__vlan_hwaccel_put_tag(skb, vlan_proto, vlan_tci);</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span></div><div class="line">__vlan_hwaccel_put_tag(<span class="keyword">struct</span> sk_buff *skb,</div><div class="line">					  __be16 vlan_proto, u16 vlan_tci)</div><div class="line">&#123;</div><div class="line">	<span class="comment">/*设置数据包Vlan tag信息*/</span></div><div class="line">	skb-&gt;vlan_proto = vlan_proto;</div><div class="line">	skb-&gt;vlan_tci = VLAN_TAG_PRESENT | vlan_tci;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="POP-VLAN-ACTION"><a href="#POP-VLAN-ACTION" class="headerlink" title="POP_VLAN ACTION"></a>POP_VLAN ACTION</h3><p>流表<code>POP_VLAN</code>动作移除数据包中的Vlan tag信息并更新数据包中的校验和</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">pop_vlan</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb, <span class="keyword">struct</span> sw_flow_key *key)</span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">int</span> err;</div><div class="line"></div><div class="line">	err = skb_vlan_pop(skb);</div><div class="line">	<span class="keyword">if</span> (vlan_tx_tag_present(skb))</div><div class="line">		invalidate_flow_key(key);</div><div class="line">	<span class="keyword">else</span></div><div class="line">		key-&gt;eth.tci = <span class="number">0</span>;</div><div class="line">	<span class="keyword">return</span> err;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">skb_vlan_pop</span><span class="params">(<span class="keyword">struct</span> sk_buff *skb)</span></div><div class="line">&#123;</div><div class="line">	u16 vlan_tci;</div><div class="line">	__be16 vlan_proto;</div><div class="line">	<span class="keyword">int</span> err;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (likely(vlan_tx_tag_present(skb))) &#123;</div><div class="line">		skb-&gt;vlan_tci = <span class="number">0</span>;</div><div class="line">	&#125; <span class="keyword">else</span> &#123;</div><div class="line">		<span class="keyword">if</span> (unlikely((skb-&gt;protocol != htons(ETH_P_8021Q) &amp;&amp;</div><div class="line">			      skb-&gt;protocol != htons(ETH_P_8021AD)) ||</div><div class="line">			     skb-&gt;len &lt; VLAN_ETH_HLEN))</div><div class="line">			<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">		err = __skb_vlan_pop(skb, &amp;vlan_tci);</div><div class="line">		<span class="keyword">if</span> (err)</div><div class="line">			<span class="keyword">return</span> err;</div><div class="line">	&#125;</div><div class="line">	<span class="comment">/* move next vlan tag to hw accel tag */</span></div><div class="line">	<span class="keyword">if</span> (likely((skb-&gt;protocol != htons(ETH_P_8021Q) &amp;&amp;</div><div class="line">		    skb-&gt;protocol != htons(ETH_P_8021AD)) ||</div><div class="line">		   skb-&gt;len &lt; VLAN_ETH_HLEN))</div><div class="line">		<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">	vlan_proto = skb-&gt;protocol;</div><div class="line">	err = __skb_vlan_pop(skb, &amp;vlan_tci);</div><div class="line">	<span class="keyword">if</span> (unlikely(err))</div><div class="line">		<span class="keyword">return</span> err;</div><div class="line"></div><div class="line">	__vlan_hwaccel_put_tag(skb, vlan_proto, vlan_tci);</div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/* remove VLAN header from packet and update csum accordingly. */</span></div><div class="line"><span class="keyword">static</span> <span class="keyword">int</span> __skb_vlan_pop(<span class="keyword">struct</span> sk_buff *skb, u16 *vlan_tci)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> vlan_hdr *vhdr;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> offset = skb-&gt;data - skb_mac_header(skb);</div><div class="line">	<span class="keyword">int</span> err;</div><div class="line"></div><div class="line">	__skb_push(skb, offset);</div><div class="line">	err = skb_ensure_writable(skb, VLAN_ETH_HLEN);</div><div class="line">	<span class="keyword">if</span> (unlikely(err))</div><div class="line">		<span class="keyword">goto</span> pull;</div><div class="line">	</div><div class="line">	skb_postpull_rcsum(skb, skb-&gt;data + (<span class="number">2</span> * ETH_ALEN), VLAN_HLEN);</div><div class="line"></div><div class="line">	vhdr = (<span class="keyword">struct</span> vlan_hdr *)(skb-&gt;data + ETH_HLEN);</div><div class="line">	*vlan_tci = ntohs(vhdr-&gt;h_vlan_TCI);</div><div class="line"></div><div class="line">	memmove(skb-&gt;data + VLAN_HLEN, skb-&gt;data, <span class="number">2</span> * ETH_ALEN);</div><div class="line">	__skb_pull(skb, VLAN_HLEN);</div><div class="line"></div><div class="line">	vlan_set_encap_proto(skb, vhdr);</div><div class="line">	skb-&gt;mac_header += VLAN_HLEN;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (skb_network_offset(skb) &lt; ETH_HLEN)</div><div class="line">		skb_set_network_header(skb, ETH_HLEN);</div><div class="line"></div><div class="line">	skb_reset_mac_len(skb);</div><div class="line">pull:</div><div class="line">	__skb_pull(skb, offset);</div><div class="line"></div><div class="line">	<span class="keyword">return</span> err;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/LinuxKernel/" rel="tag">#LinuxKernel</a>
+          
+            <a href="/tags/OVS/" rel="tag">#OVS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/15/CentOS7修改网卡名称及顺序/" rel="next" title="CentOS7修改网卡名称及顺序">
+                <i class="fa fa-chevron-left"></i> CentOS7修改网卡名称及顺序
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/12/24/OVS内核KEY值提取及匹配流表代码分析/"
+           data-title="OVS内核KEY值提取及匹配流表代码分析" data-url="http://yoursite.com/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="RY" />
+          <p class="site-author-name" itemprop="name">RY</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#提取KEY值"><span class="nav-number">1.</span> <span class="nav-text">提取KEY值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#根据KEY值匹配流表"><span class="nav-number">2.</span> <span class="nav-text">根据KEY值匹配流表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#执行流表ACTION"><span class="nav-number">3.</span> <span class="nav-text">执行流表ACTION</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#OUTPUT-ACTION"><span class="nav-number">3.1.</span> <span class="nav-text">OUTPUT ACTION</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SET-ACTION"><span class="nav-number">3.2.</span> <span class="nav-text">SET ACTION</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PUSH-VLAN-ACTION"><span class="nav-number">3.3.</span> <span class="nav-text">PUSH_VLAN ACTION</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#POP-VLAN-ACTION"><span class="nav-number">3.4.</span> <span class="nav-text">POP_VLAN ACTION</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">RY</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ry0117"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>

@@ -238,6 +238,129 @@
             
               
                 
+                <a class="post-title-link" href="/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/" itemprop="url">
+                  OVS内核KEY值提取及匹配流表代码分析
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-24T18:22:54+08:00" content="2016-12-24">
+              2016-12-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/OVS/" itemprop="url" rel="index">
+                    <span itemprop="name">OVS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/24/OVS内核KEY值提取及匹配流表代码分析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>当开启OVS后，创建<code>datapath</code>类型为<code>system</code>的网桥并他添加相关接口，OVS网桥内接口在网卡接收到数据包后，数据包会先到OVS的内核模块<code>openvswitch</code>内，从数据包上提取key值，并使用key值匹配OVS内核模块中的流表，当匹配到相应的流表后，则执行流表上相应的动作；当在OVS内核缓存中匹配不到流表，则将key值信息通过NetLink发送给用户态的<code>ovs-vswitchd</code>守护进程，由其来决定如何处理数据包。</p>
+<p>下面就Linux-3.19版本内核中OpenvSwitch内核模块中的提取Key值、匹配流表及执行流表动作相关的代码做一下分析。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/12/24/OVS内核KEY值提取及匹配流表代码分析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/12/15/CentOS7修改网卡名称及顺序/" itemprop="url">
                   CentOS7修改网卡名称及顺序
                 </a>
@@ -729,7 +852,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -737,7 +860,7 @@
           
             <div class="site-state-item site-state-categories">
               <a href="/categories">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -746,7 +869,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
