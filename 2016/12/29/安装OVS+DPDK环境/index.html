@@ -1,0 +1,669 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Linux,OVS,DPDK," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="Open vSwitch是一个高质量的、多层虚拟交换机，使用开源Apache2.0许可协议，由Nicira Networks开发，主要实现代码为可移植的C代码。它的目的是让大规模网络自动化可以通过编程扩展,同时仍然支持标准的管理接口和协议（例如NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag）。此外,它被设计位支持跨越多个物理服务器的分布式环境，类似于">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安装OVS+DPSK环境">
+<meta property="og:url" content="http://yoursite.com/2016/12/29/安装OVS+DPDK环境/index.html">
+<meta property="og:site_name" content="回忆是一条没有归途的路">
+<meta property="og:description" content="Open vSwitch是一个高质量的、多层虚拟交换机，使用开源Apache2.0许可协议，由Nicira Networks开发，主要实现代码为可移植的C代码。它的目的是让大规模网络自动化可以通过编程扩展,同时仍然支持标准的管理接口和协议（例如NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag）。此外,它被设计位支持跨越多个物理服务器的分布式环境，类似于">
+<meta property="og:updated_time" content="2016-12-29T15:42:39.060Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安装OVS+DPSK环境">
+<meta name="twitter:description" content="Open vSwitch是一个高质量的、多层虚拟交换机，使用开源Apache2.0许可协议，由Nicira Networks开发，主要实现代码为可移植的C代码。它的目的是让大规模网络自动化可以通过编程扩展,同时仍然支持标准的管理接口和协议（例如NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag）。此外,它被设计位支持跨越多个物理服务器的分布式环境，类似于">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '6363975639506093000',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/29/安装OVS+DPDK环境/"/>
+
+
+  <title> 安装OVS+DPSK环境 | 回忆是一条没有归途的路 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">回忆是一条没有归途的路</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                安装OVS+DPSK环境
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-29T23:31:56+08:00" content="2016-12-29">
+              2016-12-29
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/OVS/" itemprop="url" rel="index">
+                    <span itemprop="name">OVS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/29/安装OVS+DPDK环境/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/29/安装OVS+DPDK环境/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="http://www.openvswitch.org/" target="_blank" rel="external">Open vSwitch</a>是一个高质量的、多层虚拟交换机，使用开源Apache2.0许可协议，由Nicira Networks开发，主要实现代码为可移植的C代码。它的目的是让大规模网络自动化可以通过编程扩展,同时仍然支持标准的管理接口和协议（例如NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag）。此外,它被设计位支持跨越多个物理服务器的分布式环境，类似于VMware的vNetwork分布式vswitch或Cisco Nexus 1000 V。Open vSwitch支持多种linux 虚拟化技术，包括Xen/XenServer， KVM和VirtualBox。</p>
+<p><a href="http://www.dpdk.org/" target="_blank" rel="external">DPDK</a>是一个开源的数据平面开发工具集，提供了一个用户空间下的高效数据包处理库函数，它通过环境抽象层旁路内核协议栈、 轮询模式的报文无中断收发、优化内存/缓冲区/队列管理、基于网卡多队列和流识别的负载均衡等多项技术，实现了在 x86 处理器架构下的高性能报文转发能力，用户可以在 Linux 用户态空间开发各类高速转发应用，也适合与各类商业化的数据平面加速解决方案进行集成。</p>
+<p>OpenvSwitch利用DPDK库，创建<code>datapath=netdev</code>的OVS bridge，并通过DPDK的PMD模块将所网卡驱动绑定为<code>igb_uio</code>用户态驱动，将所有处理操作全部在用户态进行，避免了用户态及内核态切换的消耗，用以提高OVS数据转发性能。</p>
+<p>下面将会通过OpenvSwitch-2.6.1和DPDK-16.07.2详细说明OVS+DPDK的安装步骤：<br><a id="more"></a></p>
+<h2 id="安装DPDK"><a href="#安装DPDK" class="headerlink" title="安装DPDK"></a>安装DPDK</h2><h3 id="下载DPDK-16-07-2源码"><a href="#下载DPDK-16-07-2源码" class="headerlink" title="下载DPDK-16.07.2源码"></a>下载DPDK-16.07.2源码</h3><p>到<a href="http://www.dpdk.org/download" target="_blank" rel="external">DPDK官网</a>下载DPDK-16.07.2版本源代码，或者是直接使用如下命令下载源码:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># 此例中将DPDK安装到/usr/src/目录下</div><div class="line">cd /usr/src/</div><div class="line">wget http:<span class="comment">//fast.dpdk.org/rel/dpdk-16.07.2.tar.xz</span></div></pre></td></tr></table></figure></p>
+<h3 id="配置和安装DPDK-16-07-2"><a href="#配置和安装DPDK-16-07-2" class="headerlink" title="配置和安装DPDK-16.07.2"></a>配置和安装DPDK-16.07.2</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"># 解压dpdk<span class="number">-16.07</span><span class="number">.2</span>源码</div><div class="line">tar xf dpdk<span class="number">-16.07</span><span class="number">.2</span>.tar.xz</div><div class="line"># 声明环境变量</div><div class="line"><span class="keyword">export</span> RTE_SDK=/usr/src/dpdk-stable<span class="number">-16.07</span><span class="number">.2</span></div><div class="line"><span class="keyword">export</span> RTE_TARGET=x86_64-native-linuxapp-gcc</div><div class="line"><span class="keyword">export</span> DPDK_BUILD=$RTE_SDK/$RTE_TARGET</div><div class="line">cd $RTE_SDK</div><div class="line"># 安装dpdk</div><div class="line">make install T=$RTE_TARGET DESTDIR=install</div></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：对于IVSHMEM，设置<br><code>export RTE_TARGET=x86_64-ivshmem-linuxapp-gcc</code></p>
+</blockquote>
+<h2 id="安装OVS"><a href="#安装OVS" class="headerlink" title="安装OVS"></a>安装OVS</h2><h3 id="下载OpenvSwitch-2-6-1源码"><a href="#下载OpenvSwitch-2-6-1源码" class="headerlink" title="下载OpenvSwitch-2.6.1源码"></a>下载OpenvSwitch-2.6.1源码</h3><p>到<a href="http://www.openvswitch.org/download/" target="_blank" rel="external">OpenvSwitch官网</a>下载openvswitch-2.6.1版本源码，或者通过下面的命令直接下载：</p>
+<pre><code>wget http://openvswitch.org/releases/openvswitch-2.6.1.tar.gz
+</code></pre><h3 id="配置OVS编译选项"><a href="#配置OVS编译选项" class="headerlink" title="配置OVS编译选项"></a>配置OVS编译选项</h3><p>如果OVS需要使用DPDK，需要在配置OVS编译参数时增加<code>--with-dpdk</code>参数，配置OVS步骤如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">tar zxf openvswitch-2.6.1.tar.gz</div><div class="line"><span class="built_in">cd</span> openvswitch-2.6.1</div><div class="line">./boot.sh</div><div class="line">./configure --prefix=/usr \</div><div class="line">		--sysconfdir=/etc  \</div><div class="line">		--localstatedir=/var \</div><div class="line">		--enable-ssl \</div><div class="line">		--with-dpdk=<span class="variable">$DPDK_BUILD</span></div></pre></td></tr></table></figure></p>
+<h3 id="修改OVS源码增加DPDK参数配置"><a href="#修改OVS源码增加DPDK参数配置" class="headerlink" title="修改OVS源码增加DPDK参数配置"></a>修改OVS源码增加DPDK参数配置</h3><p>为了方便配置DPDK参数，并且在启动OVS服务时自动配置DPDK参数，修改<code>openvswitch-2.6.1/utilities/ovs-ctl.in</code>代码，在<code>do_start_ovsdb</code>函数中增加<code>set_dpdk_config || return 1</code>代码，如下所示：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">do_start_ovsdb</span></span> () &#123;</div><div class="line">	......</div><div class="line">        set_system_ids || <span class="built_in">return</span> 1</div><div class="line">        set_dpdk_config || <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">if</span> <span class="built_in">test</span> X<span class="string">"<span class="variable">$DELETE_BRIDGES</span>"</span> = Xyes; <span class="keyword">then</span></div><div class="line">            <span class="keyword">for</span> bridge <span class="keyword">in</span> `ovs_vsctl list-br`; <span class="keyword">do</span></div><div class="line">                ovs_vsctl del-br <span class="variable">$bridge</span></div><div class="line">            <span class="keyword">done</span></div><div class="line">        <span class="keyword">fi</span></div><div class="line">	......</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>函数<code>set_dpdk_config</code>内容如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="title">set_dpdk_config</span></span>() &#123;</div><div class="line">        OVS_DPDK_CONF_FILE=/etc/ovs-script/ovs-dpdk.conf</div><div class="line">        <span class="keyword">if</span> <span class="built_in">test</span> <span class="_">-e</span> <span class="variable">$OVS_DPDK_CONF_FILE</span>; <span class="keyword">then</span></div><div class="line">                <span class="built_in">source</span> <span class="variable">$OVS_DPDK_CONF_FILE</span></div><div class="line">        <span class="keyword">fi</span></div><div class="line">        <span class="keyword">if</span> <span class="built_in">test</span> <span class="string">"<span class="variable">$OVS_DPDK</span>"</span> == <span class="string">"enforcing"</span>; <span class="keyword">then</span></div><div class="line">                <span class="keyword">if</span> <span class="built_in">test</span> x<span class="string">"<span class="variable">$DPDK_INIT</span>"</span> != x; <span class="keyword">then</span></div><div class="line">                        <span class="built_in">set</span> ovs_vsctl <span class="built_in">set</span> Open_vSwitch . \</div><div class="line">				other_config:dpdk-init=<span class="literal">true</span></div><div class="line">                        action <span class="string">"Configuring open vSwitch dpdk config"</span> <span class="string">"<span class="variable">$@</span>"</span></div><div class="line">                <span class="keyword">fi</span></div><div class="line">                <span class="keyword">if</span> <span class="built_in">test</span> x<span class="string">"<span class="variable">$DPDK_LCORE</span>"</span> != x; <span class="keyword">then</span></div><div class="line">                        <span class="built_in">set</span> ovs_vsctl <span class="built_in">set</span> Open_vSwitch .</div><div class="line">                        lcore=<span class="string">"other_config:dpdk-lcore-mask="</span>\<span class="string">"<span class="variable">$DPDK_LCORE</span>\"</span></div><div class="line">                        set "<span class="variable">$@</span><span class="string">" "</span><span class="variable">$lcore</span><span class="string">"</span></div><div class="line">                        action "Configuring Open vSwitch dpdk lcore mask<span class="string">" "</span><span class="variable">$@</span><span class="string">"</span></div><div class="line">                fi</div><div class="line">                if test x"<span class="variable">$DPDK_PMD_CPU</span><span class="string">" != x; then</span></div><div class="line">                        set ovs_vsctl set Open_vSwitch .</div><div class="line">                        pmd_cpu="other_config:pmd-cpu-mask=<span class="string">"\"<span class="variable">$DPDK_PMD_CPU</span>\"</span></div><div class="line">                        set "<span class="variable">$@</span><span class="string">" "</span><span class="variable">$pmd_cpu</span><span class="string">"</span></div><div class="line">                        action "Configuring Open vSwitch dpdk pmd cpu mask<span class="string">" "</span><span class="variable">$@</span><span class="string">"</span></div><div class="line">                fi</div><div class="line">                if test x"<span class="variable">$DPDK_SOCK_MEM</span><span class="string">" != x; then</span></div><div class="line">                        set ovs_vsctl set Open_vSwitch .</div><div class="line">                        sock_mem="other_config:dpdk-socket-mem=<span class="string">"\"<span class="variable">$DPDK_SOCK_MEM</span>\"</span></div><div class="line">                        set "<span class="variable">$@</span><span class="string">" "</span><span class="variable">$sock_mem</span><span class="string">"</span></div><div class="line">                        action "Configuring Open vSwitch dpdk socket memory<span class="string">" "</span><span class="variable">$@</span><span class="string">"</span></div><div class="line">                fi</div><div class="line">        fi</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>函数<code>set_dpdk_config</code>中解析的<code>/etc/ovs-script/ovs-dpdk.conf</code>配置文件内容如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/bin/bash</span></div><div class="line"><span class="comment"># OVS_DPDK: can take one of these two values:</span></div><div class="line"><span class="comment">#       enforcing - DPDK is enforcing in openvswitch</span></div><div class="line"><span class="comment">#       disabled - DPDK is disabled in openvswitch</span></div><div class="line">OVS_DPDK=enforcing</div><div class="line"><span class="comment"># DPDK_INIT: Specifies whether should initialize </span></div><div class="line"><span class="comment">#   and support DPDK ports</span></div><div class="line">DPDK_INIT=<span class="string">"true"</span></div><div class="line"><span class="comment"># DPDK_LCORE: Specifies the CPU cores on which dpdk lcore </span></div><div class="line"><span class="comment"># 	threads should be spawned and expects hex string</span></div><div class="line"><span class="comment"># 此处使用cpu id为：4,5,6,7</span></div><div class="line">DPDK_LCORE=<span class="string">"0xf0"</span></div><div class="line"><span class="comment"># DPDK_PMD_CPU: Multiple pmd threads can be created </span></div><div class="line"><span class="comment"># 	and pinned to CPU cores</span></div><div class="line">DPDK_PMD_CPU=<span class="string">"f0"</span></div><div class="line"><span class="comment"># DPDK_SOCK_MEM: Comma separated list of memory to </span></div><div class="line"><span class="comment"># 	pre-allocate from hugepages on specific sockets.</span></div><div class="line">DPDK_SOCK_MEM=<span class="string">"2048,0"</span></div></pre></td></tr></table></figure></p>
+<h3 id="编译安装OVS"><a href="#编译安装OVS" class="headerlink" title="编译安装OVS"></a>编译安装OVS</h3><p>OVS编译配置已经完成，并且DPDK相关启动配置也已经修改，下面就是编译安装OVS代码：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure></p>
+<h3 id="配置OVS服务"><a href="#配置OVS服务" class="headerlink" title="配置OVS服务"></a>配置OVS服务</h3><p>现在已经编译完成了OVS，我们需要增加OVS服务，可以在系统启动时启动OVS，并且可以通过<code>systemctl</code>来启动OVS。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> openvswitch-2.6.1/rhel/</div><div class="line">cp -rf etc_sysconfig_network-scripts_ifdown-ovs \</div><div class="line">	/etc/sysconfig/network-scripts/ifdown-ovs</div><div class="line">chmod 755 /etc/sysconfig/network-scripts/ifdown-ovs</div><div class="line">cp -rf etc_sysconfig_network-scripts_ifup-ovs \</div><div class="line">	/etc/sysconfig/network-scripts/ifup-ovs</div><div class="line">chmod 755 /etc/sysconfig/network-scripts/ifup-ovs</div><div class="line">cp -rf etc_init.d_openvswitch /etc/init.d/openvswitch</div><div class="line">chmod 755 /etc/init.d/openvswitch</div><div class="line">cp -rf etc_logrotate.d_openvswitch \</div><div class="line">	/etc/logrotate.d/openvswitch</div><div class="line">chmod 644 /etc/logrotate.d/openvswitch</div><div class="line">cp -rf usr_share_openvswitch_scripts_sysconfig.template \</div><div class="line">	/usr/share/openvswitch/scripts/sysconfig.template</div><div class="line">chmod 644 /usr/share/openvswitch/scripts/sysconfig.template</div><div class="line">cp -rf /usr/share/openvswitch/scripts/sysconfig.template \</div><div class="line">	/etc/sysconfig/openvswitch</div></pre></td></tr></table></figure>
+<p>增加OVS服务：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/sbin/chkconfig --add openvswitch</div><div class="line">/sbin/chkconfig openvswitch on</div></pre></td></tr></table></figure></p>
+<h2 id="配置DPDK接口并启动OVS服务"><a href="#配置DPDK接口并启动OVS服务" class="headerlink" title="配置DPDK接口并启动OVS服务"></a>配置DPDK接口并启动OVS服务</h2><p>如果OVS服务想要引用DPDK接口，还需要进行一些配置，如设置大页内存，安装DPDK用户态驱动等。</p>
+<h3 id="配置大页内存"><a href="#配置大页内存" class="headerlink" title="配置大页内存"></a>配置大页内存</h3><p>在配置hugepage之前，需要检查设备支持的大页内存大小：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 在Intel架构CPU中</span></div><div class="line"><span class="comment"># 如果cpuinfo中包括pse标志，则表示支持2M大页内存</span></div><div class="line">cat /proc/cpuinfo | grep pse</div><div class="line"><span class="comment"># 如果cpuinfo中包括pdpe1gb标志，则表示支持1GB大页内存</span></div><div class="line">cat /proc/cpuinfo | grep pdpe1gb</div></pre></td></tr></table></figure></p>
+<p>配置系统内核启动参数，设置大页参数：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置hugepage大小为1G，设置6个大页</span></div><div class="line">sed -i <span class="string">'s/quiet/quiet default_hugepagesz=1G hugepagesz=1G hugepages=6 \</span></div><div class="line">	    iommu=pt intel_iommu=on/' /etc/default/grub</div><div class="line"></div><div class="line"><span class="comment"># 如果系统启动时使用BIOS</span></div><div class="line">grub2-mkconfig -o /boot/grub2/grub.cfg</div><div class="line"><span class="comment"># 如果系统启动时使用UEFI</span></div><div class="line">grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg</div><div class="line"></div><div class="line"><span class="comment"># 设置最大锁定内存地址空间</span></div><div class="line"><span class="comment"># 此处大小应该对应于OVS中分配的DPDK大sock mem大小</span></div><div class="line">sed -i <span class="string">"/#@student/aroot soft memlock 2097152"</span>\</div><div class="line">	/etc/security/limits.conf</div><div class="line">sed -i <span class="string">"/#@student/aroot hard memlock 2097152"</span>\</div><div class="line">	/etc/security/limits.conf</div><div class="line"></div><div class="line"><span class="comment"># 添加系统启动自动挂载大页</span></div><div class="line"><span class="built_in">echo</span> <span class="string">"nodev   /dev/hugepages hugetlbfs pagesize=1G 0 0"</span> \</div><div class="line">	&gt;&gt; /etc/fstab</div></pre></td></tr></table></figure></p>
+<p>挂载大页到系统中：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">mkdir -p /dev/hugepages</div><div class="line">mount -t hugetlbfs -o pagesize=1G none /dev/hugepages</div><div class="line"><span class="built_in">echo</span> 6 &gt; /proc/sys/vm/nr_hugepages</div></pre></td></tr></table></figure></p>
+<h3 id="安装DPDK用户态网卡驱动"><a href="#安装DPDK用户态网卡驱动" class="headerlink" title="安装DPDK用户态网卡驱动"></a>安装DPDK用户态网卡驱动</h3><p>DPDK使用用户态网卡驱动程序，此处需要安装用户态网卡驱动<code>igb_uio</code>，并绑定网卡驱动为<code>igb_uio</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 安装用户态驱动程序igb_uio及其依赖模块uio</span></div><div class="line">modprobe uio</div><div class="line">insmod <span class="variable">$DPDK_BUILD</span>/kmod/igb_uio.ko</div><div class="line"><span class="built_in">cd</span> <span class="variable">$RTE_SDK</span>/lib/librte_vhost/eventfd_link</div><div class="line">make</div><div class="line">insmod eventfd_link.ko</div><div class="line"></div><div class="line"><span class="comment"># 绑定网卡驱动为igb_uio</span></div><div class="line"><span class="comment"># 查看网卡的PCI ID，如此处将绑定eth1,eth2使用igb_uio驱动</span></div><div class="line">ethtool -i eth1 | grep bus-info | awk <span class="string">'&#123;print $2&#125;'</span></div><div class="line">0000:05:00.0</div><div class="line">ethtool -i eth2 | grep bus-info | awk <span class="string">'&#123;print $2&#125;'</span></div><div class="line">0000:05:00.1</div><div class="line"><span class="comment"># 绑定eth1，eth2网卡驱动为igb_uio用户态驱动程序</span></div><div class="line"><span class="variable">$RTE_SDK</span>/tools/dpdk-devbind.py -b igb_uio 0000:05:00.0</div><div class="line"><span class="variable">$RTE_SDK</span>/tools/dpdk-devbind.py -b igb_uio 0000:05:00.1</div><div class="line"><span class="comment"># 查看绑定状态</span></div><div class="line"><span class="variable">$RTE_SDK</span>/tools/dpdk-devbind.py <span class="_">-s</span></div></pre></td></tr></table></figure>
+<h3 id="启动OVS服务"><a href="#启动OVS服务" class="headerlink" title="启动OVS服务"></a>启动OVS服务</h3><p>现在所有前置配置均已完成，下面就是启动OVS服务了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl start openvswitch.service</div></pre></td></tr></table></figure>
+<p>查看OVS服务是否启动成功：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ps aux | grep ovs</div></pre></td></tr></table></figure></p>
+<h3 id="创建OVS-bridge并添加接口"><a href="#创建OVS-bridge并添加接口" class="headerlink" title="创建OVS bridge并添加接口"></a>创建OVS bridge并添加接口</h3><p>OVS服务启动成功后，就可以添加网桥和网口进行测试了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 添加datapath类型为netdev的网桥，此网桥可以添加dpdk类型接口</span></div><div class="line">ovs-vsctl add-br ovsBusiness -- \</div><div class="line">	<span class="built_in">set</span> bridge ovsBusiness datapath_type=netdev</div><div class="line"><span class="comment"># 添加dpdk接口</span></div><div class="line">ovs-vsctl add-port ovsBusiness dpdk0 -- \</div><div class="line">	<span class="built_in">set</span> Interface dpdk0 <span class="built_in">type</span>=dpdk</div><div class="line">ovs-vsctl add-port ovsBusiness dpdk1 -- \</div><div class="line">	<span class="built_in">set</span> Interface dpdk1 <span class="built_in">type</span>=dpdk</div></pre></td></tr></table></figure>
+<h3 id="OVS上dpdk接口Flow-Ctrl设置"><a href="#OVS上dpdk接口Flow-Ctrl设置" class="headerlink" title="OVS上dpdk接口Flow Ctrl设置"></a>OVS上dpdk接口Flow Ctrl设置</h3><p>如果想要通过流表控制<code>dpdk</code>类型接口，需要设置<code>flow-ctrl-autoneg</code> <code>rx-flow-ctrl</code> <code>tx-flow-ctrl</code>参数，因为默认情况下dpdk类型接口是不开启<code>flow ctrl</code>的。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">ovs-vsctl <span class="built_in">set</span> Interface dpdk0 <span class="built_in">type</span>=dpdk \</div><div class="line">	options:flow-ctrl-autoneg=<span class="literal">true</span></div><div class="line">ovs-vsctl <span class="built_in">set</span> Interface dpdk0 <span class="built_in">type</span>=dpdk \</div><div class="line">	options:rx-flow-ctrl=<span class="literal">true</span></div><div class="line">ovs-vsctl <span class="built_in">set</span> Interface dpdk0 <span class="built_in">type</span>=dpdk \</div><div class="line">	options:tx-flow-ctrl=<span class="literal">true</span></div></pre></td></tr></table></figure></p>
+<h3 id="配置流表进行数据转发测试"><a href="#配置流表进行数据转发测试" class="headerlink" title="配置流表进行数据转发测试"></a>配置流表进行数据转发测试</h3><p>通过<code>ovs-ofctl dump-ports ovsBusiness</code>命令查看<code>dpdk0</code>和<code>dpdk1</code>在<code>ovsBusiness</code>中的序号值，然后通过<code>ovs-ofctl</code>下发流表：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 通过ovs-ofctl dump-ports ovsBusiness命令查看到dpdk0和dpdk1</span></div><div class="line"><span class="comment"># 的序号分别为1、2，下面通过ovs-ofctl下发流表：</span></div><div class="line">ovs-ofctl add-flow ovsBusiness <span class="string">"cookie=0x0, table=0, \</span></div><div class="line">	send_flow_rem priority=65535,arp,in_port=1 \</div><div class="line">	actions=output:2"</div><div class="line">ovs-ofctl add-flow ovsBusiness <span class="string">"cookie=0x0, table=0, \</span></div><div class="line">	send_flow_rem priority=65535,ip,in_port=1 \</div><div class="line">	actions=output:2"</div><div class="line">ovs-ofctl add-flow ovsBusiness <span class="string">"cookie=0x0, table=0, \</span></div><div class="line">	send_flow_rem priority=3566,arp,in_port=2 \</div><div class="line">	actions=output:1"</div><div class="line">ovs-ofctl add-flow ovsBusiness <span class="string">"cookie=0x0, table=0, \</span></div><div class="line">	send_flow_rem priority=3566,ip,in_port=2 \</div><div class="line">	actions=output:1"</div></pre></td></tr></table></figure>
+<p>这样就可以分别通过<code>dpdk0</code>和<code>dpdk1</code>进行数据通信测试了。</p>
+<h2 id="系统重启后自动启动OVS及DPDK"><a href="#系统重启后自动启动OVS及DPDK" class="headerlink" title="系统重启后自动启动OVS及DPDK"></a>系统重启后自动启动OVS及DPDK</h2><p>通过上面一系列步骤之后，OVS服务已经可以正常运行，但是如果系统重启之后，OVS服务可以启动，但是DPDK相关的用户态驱动模块及网卡绑定用户态驱动等操作并未执行，所以为了能在开机时OVS+DPDK能正常启动，下面还需要进行一些操作，下面将会详细说明。</p>
+<h3 id="设置DPDK相关环境变量"><a href="#设置DPDK相关环境变量" class="headerlink" title="设置DPDK相关环境变量"></a>设置DPDK相关环境变量</h3><p>DPDK在进行编译及配置时需要用到两个环境变量，<code>RTE_SDK</code>和<code>RTE_TARGET</code>，将这两个环境变量添加到<code>/etc/profile</code>文件末尾：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">echo</span> <span class="string">"export RTE_SDK=/usr/src/dpdk-stable-16.07.2"</span> &gt;&gt; /etc/profile</div><div class="line"><span class="built_in">echo</span> <span class="string">"export RTE_TARGET=x86_64-native-linuxapp-gcc"</span> &gt;&gt; /etc/profile</div></pre></td></tr></table></figure></p>
+<h3 id="加载DPDK用户态驱动并绑定相关网卡"><a href="#加载DPDK用户态驱动并绑定相关网卡" class="headerlink" title="加载DPDK用户态驱动并绑定相关网卡"></a>加载DPDK用户态驱动并绑定相关网卡</h3><p>将DPDK需要绑定的接口以如下形式添加到<code>/etc/ovs-script/dpdk_port.conf</code>文件中：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 接口名称以空格分隔</span></div><div class="line">DPDKBindIfaces:eth1 eth2</div></pre></td></tr></table></figure></p>
+<p>修改<code>/etc/rc.d/rc.local</code>文件，用来加载DPDK相关驱动程序并绑定DPDK接口，内容如下：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/bin/bash</span></div><div class="line"><span class="comment"># 此时openvswitch已经启动了，需要先停止openvswitch服务</span></div><div class="line">service openvswitch stop</div><div class="line"></div><div class="line">touch /var/lock/subsys/<span class="built_in">local</span></div><div class="line"><span class="comment"># dpdk-16.07.2</span></div><div class="line"><span class="built_in">export</span> RTE_SDK=/usr/src/dpdk-stable-16.07.2</div><div class="line"><span class="built_in">export</span> RTE_TARGET=x86_64-native-linuxapp-gcc</div><div class="line"><span class="comment"># 安装DPDK相关驱动</span></div><div class="line">modprobe uio</div><div class="line">insmod <span class="variable">$&#123;RTE_SDK&#125;</span>/<span class="variable">$&#123;RTE_TARGET&#125;</span>/kmod/igb_uio.ko</div><div class="line">insmod <span class="variable">$&#123;RTE_SDK&#125;</span>/lib/librte_vhost/eventfd_link/eventfd_link.ko</div><div class="line"><span class="comment"># DPDK绑定接口列表配置文件</span></div><div class="line">dpdkportfile=/etc/ovs-script/dpdk_port.conf</div><div class="line">LOG_FILE_PATH=/var/<span class="built_in">log</span>/ovs-init.log</div><div class="line"></div><div class="line"><span class="comment"># dpdk-16.07.2</span></div><div class="line">DPDKBINDTOOLS=<span class="variable">$&#123;RTE_SDK&#125;</span>/tools/dpdk-devbind.py</div><div class="line"><span class="comment"># OVS服务的DPDK配置参数，用于判断OVS是否使用DPDK</span></div><div class="line">dpdkconffile=/etc/ovs-script/ovs-dpdk.conf</div><div class="line"></div><div class="line"><span class="comment"># 获取网卡的pci id</span></div><div class="line"><span class="function"><span class="title">eth2pci</span></span>()</div><div class="line">&#123;</div><div class="line">        <span class="built_in">local</span> ethname=<span class="variable">$1</span></div><div class="line">        <span class="keyword">if</span> [ X<span class="string">"<span class="variable">$ethname</span>"</span> == X ]; <span class="keyword">then</span></div><div class="line">                write_log <span class="string">"invalid interface name"</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line"></div><div class="line">        <span class="built_in">local</span> pcinum=`ethtool -i <span class="variable">$ethname</span> | grep bus-info | awk <span class="string">'&#123;print $2&#125;'</span>`</div><div class="line">        <span class="keyword">if</span> [ X<span class="string">"<span class="variable">$pcinum</span>"</span> != X ]; <span class="keyword">then</span></div><div class="line">                <span class="built_in">echo</span> <span class="string">"<span class="variable">$pcinum</span>"</span></div><div class="line">                <span class="built_in">return</span> 0</div><div class="line">        <span class="keyword">else</span></div><div class="line">                write_log <span class="string">"Error: get interface '<span class="variable">$ethname</span>' pcinum failed."</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line">&#125;</div><div class="line"><span class="comment"># 检查网卡名称是否合法</span></div><div class="line"><span class="function"><span class="title">check_ether_name</span></span>()</div><div class="line">&#123;</div><div class="line">        <span class="built_in">local</span> find_ether_flag=0</div><div class="line">        <span class="built_in">local</span> ethname=<span class="variable">$1</span></div><div class="line">        <span class="keyword">if</span> [ X<span class="string">"<span class="variable">$ethname</span>"</span> == X ];<span class="keyword">then</span></div><div class="line">                write_log <span class="string">"Error: invalid interface name"</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line">        <span class="built_in">local</span> all_ethname=`cat /proc/net/dev|grep <span class="string">':'</span>|awk -F<span class="string">':'</span> <span class="string">'&#123;print $1&#125;'</span>`</div><div class="line">        <span class="keyword">for</span> name <span class="keyword">in</span> <span class="variable">$all_ethname</span>; <span class="keyword">do</span></div><div class="line">                <span class="keyword">if</span> [ X<span class="string">"<span class="variable">$name</span>"</span> == X<span class="string">"<span class="variable">$ethname</span>"</span> ];<span class="keyword">then</span></div><div class="line">                        find_ether_flag=1</div><div class="line">                <span class="keyword">fi</span></div><div class="line">        <span class="keyword">done</span></div><div class="line">        <span class="keyword">if</span> [ <span class="variable">$find_ether_flag</span> == 0 ];<span class="keyword">then</span></div><div class="line">                write_log <span class="string">"Error: invalid ethername '<span class="variable">$ethname</span>'"</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line">        <span class="built_in">return</span> 0</div><div class="line">&#125;</div><div class="line"><span class="comment"># 绑定网卡使用dpdk用户态驱动</span></div><div class="line"><span class="function"><span class="title">bind2dpdk</span></span>()</div><div class="line">&#123;</div><div class="line">        <span class="built_in">local</span> pcinum=<span class="variable">$1</span></div><div class="line">        <span class="keyword">if</span> [ x<span class="string">"<span class="variable">$pcinum</span>"</span> == x ];<span class="keyword">then</span></div><div class="line">                write_log <span class="string">"bind2dpdk: invalid argument"</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line">        <span class="keyword">if</span> [ x<span class="string">"<span class="variable">$RTE_SDK</span>"</span> == x ];<span class="keyword">then</span></div><div class="line">                write_log <span class="string">"Could not find dpdk dir"</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line"></div><div class="line">        <span class="variable">$DPDKBINDTOOLS</span> --bind=igb_uio <span class="variable">$pcinum</span></div><div class="line">        ret=$?</div><div class="line">        <span class="keyword">if</span> [ <span class="variable">$ret</span> != 0 ];<span class="keyword">then</span></div><div class="line">                write_log <span class="string">"<span class="variable">$DPDKBINDTOOLS</span> bind '<span class="variable">$pcinum</span>' failed."</span></div><div class="line">                <span class="built_in">return</span> 1</div><div class="line">        <span class="keyword">fi</span></div><div class="line">        <span class="built_in">return</span> 0</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="title">ovs_bind_dpdk_port</span></span>()</div><div class="line">&#123;</div><div class="line">        <span class="keyword">for</span> ethname <span class="keyword">in</span> <span class="string">"<span class="variable">$@</span>"</span>; <span class="keyword">do</span></div><div class="line">                check_ether_name <span class="variable">$ethname</span></div><div class="line">                <span class="keyword">if</span> [ $? != 0 ];<span class="keyword">then</span></div><div class="line">                        <span class="built_in">return</span> 1</div><div class="line">                <span class="keyword">fi</span></div><div class="line"></div><div class="line">                pcinum=`eth2pci <span class="variable">$ethname</span>`</div><div class="line">                ret=$?</div><div class="line">                <span class="keyword">if</span> [ <span class="variable">$ret</span> != 0 ]; <span class="keyword">then</span></div><div class="line">                        <span class="built_in">exit</span> 1</div><div class="line">                <span class="keyword">fi</span></div><div class="line"></div><div class="line">                <span class="built_in">bind</span>2dpdk <span class="variable">$pcinum</span></div><div class="line">        <span class="keyword">done</span> </div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">if</span> [ <span class="_">-f</span> <span class="variable">$dpdkportfile</span> ]; <span class="keyword">then</span></div><div class="line">        portlist=`cat <span class="variable">$dpdkportfile</span>|grep <span class="string">"DPDKBindIfaces"</span>|awk -F<span class="string">':'</span> <span class="string">'&#123;print $2&#125;'</span>`</div><div class="line">        dpdkmode=`grep <span class="string">"OVS_DPDK="</span> <span class="variable">$dpdkconffile</span> | awk -F<span class="string">'='</span> <span class="string">'&#123;print $2&#125;'</span>`</div><div class="line">        <span class="keyword">if</span> [ -n <span class="string">"<span class="variable">$portlist</span>"</span> ] &amp;&amp; [ x<span class="string">"<span class="variable">$dpdkmode</span>"</span> == x<span class="string">"enforcing"</span> ] ; <span class="keyword">then</span></div><div class="line">                ovs_bind_dpdk_port <span class="variable">$portlist</span></div><div class="line">        <span class="keyword">fi</span></div><div class="line"><span class="keyword">fi</span></div><div class="line"><span class="comment">#启动openvswitch服务</span></div><div class="line">service openvswitch start</div></pre></td></tr></table></figure></p>
+<p>给<code>/etc/rc.d/rc.local</code>添加可执行权限，这样主机重启后就可以自动加载DPDK的用户态驱动程序并绑定网卡到DPDK的用户态驱动，OVS可以正常带有DPDK参数运行。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/OVS/" rel="tag">#OVS</a>
+          
+            <a href="/tags/DPDK/" rel="tag">#DPDK</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/25/OVS中端口数据包收发流程/" rel="next" title="OVS中端口数据包收发流程">
+                <i class="fa fa-chevron-left"></i> OVS中端口数据包收发流程
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/12/29/安装OVS+DPDK环境/"
+           data-title="安装OVS+DPSK环境" data-url="http://yoursite.com/2016/12/29/安装OVS+DPDK环境/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="RY" />
+          <p class="site-author-name" itemprop="name">RY</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装DPDK"><span class="nav-number">1.</span> <span class="nav-text">安装DPDK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下载DPDK-16-07-2源码"><span class="nav-number">1.1.</span> <span class="nav-text">下载DPDK-16.07.2源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置和安装DPDK-16-07-2"><span class="nav-number">1.2.</span> <span class="nav-text">配置和安装DPDK-16.07.2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装OVS"><span class="nav-number">2.</span> <span class="nav-text">安装OVS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下载OpenvSwitch-2-6-1源码"><span class="nav-number">2.1.</span> <span class="nav-text">下载OpenvSwitch-2.6.1源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置OVS编译选项"><span class="nav-number">2.2.</span> <span class="nav-text">配置OVS编译选项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改OVS源码增加DPDK参数配置"><span class="nav-number">2.3.</span> <span class="nav-text">修改OVS源码增加DPDK参数配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编译安装OVS"><span class="nav-number">2.4.</span> <span class="nav-text">编译安装OVS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置OVS服务"><span class="nav-number">2.5.</span> <span class="nav-text">配置OVS服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置DPDK接口并启动OVS服务"><span class="nav-number">3.</span> <span class="nav-text">配置DPDK接口并启动OVS服务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置大页内存"><span class="nav-number">3.1.</span> <span class="nav-text">配置大页内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装DPDK用户态网卡驱动"><span class="nav-number">3.2.</span> <span class="nav-text">安装DPDK用户态网卡驱动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动OVS服务"><span class="nav-number">3.3.</span> <span class="nav-text">启动OVS服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建OVS-bridge并添加接口"><span class="nav-number">3.4.</span> <span class="nav-text">创建OVS bridge并添加接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OVS上dpdk接口Flow-Ctrl设置"><span class="nav-number">3.5.</span> <span class="nav-text">OVS上dpdk接口Flow Ctrl设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置流表进行数据转发测试"><span class="nav-number">3.6.</span> <span class="nav-text">配置流表进行数据转发测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统重启后自动启动OVS及DPDK"><span class="nav-number">4.</span> <span class="nav-text">系统重启后自动启动OVS及DPDK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#设置DPDK相关环境变量"><span class="nav-number">4.1.</span> <span class="nav-text">设置DPDK相关环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加载DPDK用户态驱动并绑定相关网卡"><span class="nav-number">4.2.</span> <span class="nav-text">加载DPDK用户态驱动并绑定相关网卡</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">RY</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ry0117"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
