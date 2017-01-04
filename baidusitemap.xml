@@ -4,6 +4,30 @@
 
     
   <url>
+    <loc>http://yoursite.com/2017/01/04/OpenvSwitch%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/</loc>
+    <lastmod>2017-01-04T15:09:44.298Z</lastmod>
+    <data>
+        <display>
+        <title>OpenvSwitch环路问题</title>
+        <pubTime>2017-01-04T15:08:03.000Z</pubTime>
+        
+        <tag>LinuxKernel</tag>
+         
+        <tag>Linux</tag>
+         
+        <tag>OVS</tag>
+         
+         
+           
+             
+              <breadCrumb title="OVS" url="http://yoursite.com/categories/OVS/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://yoursite.com/2016/12/29/%E5%AE%89%E8%A3%85OVS+DPDK%E7%8E%AF%E5%A2%83/</loc>
     <lastmod>2016-12-29T15:42:39.060Z</lastmod>
     <data>

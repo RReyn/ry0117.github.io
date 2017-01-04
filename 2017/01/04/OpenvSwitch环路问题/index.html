@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="LinuxKernel,Linux,OVS," />
 
 
 
@@ -84,16 +84,16 @@
 
 
 
-<meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+<meta name="description" content="问题现象说明前几天在公司内网中部署的一台虚拟机上面建立了一个OVS bridge，并且将虚拟机中的两个网口加入到OVS bridge中，之后公司办公网马上就断网了。经过排查发现是此虚拟机上的OVS bridge上的两个网口出现环路导致的断网。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://yoursite.com/2016/12/13/hello-world/index.html">
+<meta property="og:title" content="OpenvSwitch环路问题">
+<meta property="og:url" content="http://yoursite.com/2017/01/04/OpenvSwitch环路问题/index.html">
 <meta property="og:site_name" content="回忆是一条没有归途的路">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
-<meta property="og:updated_time" content="2016-12-13T15:49:17.708Z">
+<meta property="og:description" content="问题现象说明前几天在公司内网中部署的一台虚拟机上面建立了一个OVS bridge，并且将虚拟机中的两个网口加入到OVS bridge中，之后公司办公网马上就断网了。经过排查发现是此虚拟机上的OVS bridge上的两个网口出现环路导致的断网。">
+<meta property="og:updated_time" content="2017-01-04T15:09:44.298Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+<meta name="twitter:title" content="OpenvSwitch环路问题">
+<meta name="twitter:description" content="问题现象说明前几天在公司内网中部署的一台虚拟机上面建立了一个OVS bridge，并且将虚拟机中的两个网口加入到OVS bridge中，之后公司办公网马上就断网了。经过排查发现是此虚拟机上的OVS bridge上的两个网口出现环路导致的断网。">
 
 
 
@@ -114,10 +114,10 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2016/12/13/hello-world/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/01/04/OpenvSwitch环路问题/"/>
 
 
-  <title> Hello World | 回忆是一条没有归途的路 </title>
+  <title> OpenvSwitch环路问题 | 回忆是一条没有归途的路 </title>
 </head>
 
 <body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
@@ -239,7 +239,7 @@
             
             
               
-                Hello World
+                OpenvSwitch环路问题
               
             
           </h1>
@@ -251,19 +251,38 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-12-13T23:49:17+08:00" content="2016-12-13">
-              2016-12-13
+            <time itemprop="dateCreated" datetime="2017-01-04T23:08:03+08:00" content="2017-01-04">
+              2017-01-04
             </time>
           </span>
 
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/OVS/" itemprop="url" rel="index">
+                    <span itemprop="name">OVS</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
           
 
           
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/12/13/hello-world/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/13/hello-world/" itemprop="commentsCount"></span>
+                <a href="/2017/01/04/OpenvSwitch环路问题/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/04/OpenvSwitch环路问题/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -286,16 +305,27 @@
       
 
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
+        <h2 id="问题现象说明"><a href="#问题现象说明" class="headerlink" title="问题现象说明"></a>问题现象说明</h2><p>前几天在公司内网中部署的一台虚拟机上面建立了一个OVS bridge，并且将虚拟机中的两个网口加入到OVS bridge中，之后公司办公网马上就断网了。经过排查发现是此虚拟机上的OVS bridge上的两个网口出现环路导致的断网。</p>
 <a id="more"></a>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>现在已经查找到问题了，那么如何解决此问题呢？</p>
+<h3 id="开启STP"><a href="#开启STP" class="headerlink" title="开启STP"></a>开启STP</h3><p>我们知道在普通网桥中，可以通过在网桥中开启STP来解决环路问题，在OVS bridge中同样可以通过开启STP来解决环路问题，下面的命令用来创建bridge br0并开启STP功能：</p>
+<pre><code>ovs-vsctl add-br br0 -- set bridge br0 stp_enable=true
+</code></pre><h3 id="设置fail-mode参数"><a href="#设置fail-mode参数" class="headerlink" title="设置fail-mode参数"></a>设置fail-mode参数</h3><p>在OVS的文档中，针对环路问题给出了另外一种解决思路，当给OVS bridge设置了控制器时，可以通过设置<code>fail-mode</code>参数值来解决OVS bridge环路问题。</p>
+<p>在OVS的<code>ovs-vswitchd.conf.db</code>文档中<code>fail-mode</code>参数进行了详细的说明，下面是对文档中对<code>fail-mode</code>参数的总结。</p>
+<p><code>fail-mode</code>参数是OVS bridge的可选参数，其值为<code>secure</code>或<code>standalone</code>。</p>
+<p>当为OVS bridge配置了控制器时，则由控制器负责处理OVS网桥上的所有数据流。当OVS bridge在一段时间内无法连接到控制器时，OVS bridge不再允许数据流通过。针对这种情形，<code>fail-mode</code>的参数值则会决定此时OVS bridge的行为：</p>
+<ul>
+<li><code>standalone</code>：三个探测时间间隔内接收不到控制器的消息，则OVS bridge将会自己决定如何处理数据包。在这种情况下，OVS bridge像普通MAC-learning交换机一样进行工作。而且此时OVS bridge还会继续连接控制器，当连接上控制器后，则将数据流控制权交给控制器。</li>
+<li><code>secure</code>：如果无法连接至控制器或者未设置控制器，则OVS bridge不处理任何数据流。此时OVS bridge会一直尝试连接控制器。</li>
+</ul>
+<p>如果OVS bridge是设置有控制器的情况下，并且OVS bridge将一直由控制器处理数据流的情形下，可以设置<code>fail-mode=secure</code>来解决OVS bridge环路问题：</p>
+<pre><code>ovs-vsctl add-br br0 -- set bridge br0 fail-mode=secure
+# 或者
+ovs-vsctl add-br br0
+ovs-vsctl set-fail-mode br0 secure
+</code></pre><blockquote>
+<p>注意：通过设置<code>fail-mode</code>为<code>secure</code>后，如果OVS未设置控制器或者控制器与OVS之间的连接断开，则可能会导致网络中断。</p>
+</blockquote>
 
       
     </div>
@@ -316,22 +346,28 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/LinuxKernel/" rel="tag">#LinuxKernel</a>
+          
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/OVS/" rel="tag">#OVS</a>
+          
+        </div>
+      
 
       
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/12/13/自动化安装ISO制作流程/" rel="next" title="自动化安装ISO制作流程">
-                <i class="fa fa-chevron-left"></i> 自动化安装ISO制作流程
+              <a href="/2016/12/29/安装OVS+DPDK环境/" rel="next" title="安装OVS+DPSK环境">
+                <i class="fa fa-chevron-left"></i> 安装OVS+DPSK环境
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/12/14/制作U盘启动盘/" rel="prev" title="制作U盘启动盘">
-                制作U盘启动盘 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -357,8 +393,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/12/13/hello-world/"
-           data-title="Hello World" data-url="http://yoursite.com/2016/12/13/hello-world/">
+      <div class="ds-thread" data-thread-key="2017/01/04/OpenvSwitch环路问题/"
+           data-title="OpenvSwitch环路问题" data-url="http://yoursite.com/2017/01/04/OpenvSwitch环路问题/">
       </div>
     
   </div>
@@ -449,7 +485,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">1.</span> <span class="nav-text">Quick Start</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-new-post"><span class="nav-number">1.1.</span> <span class="nav-text">Create a new post</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Run-server"><span class="nav-number">1.2.</span> <span class="nav-text">Run server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generate-static-files"><span class="nav-number">1.3.</span> <span class="nav-text">Generate static files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy-to-remote-sites"><span class="nav-number">1.4.</span> <span class="nav-text">Deploy to remote sites</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题现象说明"><span class="nav-number">1.</span> <span class="nav-text">问题现象说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">2.</span> <span class="nav-text">解决方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#开启STP"><span class="nav-number">2.1.</span> <span class="nav-text">开启STP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置fail-mode参数"><span class="nav-number">2.2.</span> <span class="nav-text">设置fail-mode参数</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
